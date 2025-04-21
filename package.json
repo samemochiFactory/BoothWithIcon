@@ -1,0 +1,14 @@
+{
+  "dependencies": {
+    "file-saver": "^2.0.5",
+    "icojs": "^0.19.5",
+    "jszip": "^3.10.1"
+  },
+  "devDependencies": {
+    "vite": "^6.3.2",
+    "vite-plugin-static-copy": "^2.3.1"
+  },
+  "scripts": {
+    "build": "vite build"
+  }
+}

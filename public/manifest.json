@@ -1,0 +1,46 @@
+{
+    "manifest_version": 3,
+    "name": "BoothAssetsManager",
+    "version": "0.1.0",
+    "description": "Boothの商品を保存するときにショップ情報やリンクを含めて管理しやすくします．",
+    "permissions": [
+        "storage",
+        "downloads"
+    ],
+    "host_permissions": [
+        "<all_urls>"
+    ],
+    "background": {
+        "service_worker": "background.js",
+        "type": "module"
+    },
+    "action": {
+        "default_popup": "popup.html",
+        "default_title": "Click me!"
+    },
+    "icons": {
+        "16": "icons/icon.png",
+        "48": "icons/icon.png",
+        "128": "icons/icon.png"
+    },
+    "content_scripts": [
+        {
+            "matches": [
+                "https://accounts.booth.pm/library*"
+            ],
+            "js": [
+                "content.js"
+            ]
+        }
+    ],
+    "web_accessible_resources": [
+        {
+            "matches": [
+                "https://accounts.booth.pm/*"
+            ],
+            "resources": [
+                "src/content.js"
+            ]
+        }
+    ]
+}

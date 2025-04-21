@@ -1,0 +1,130 @@
+{
+    "description": "\n本モデルはUnityのHumanoid形式に対応した\nオリジナル3Dモデル『シフォン -Chiffon- 』です。\n\n主にVRChatでの使用を想定したモデルです。\n利用規約の範囲内でご利用いただけます。\n",
+    "factory_description": null,
+    "id": 5354471,
+    "is_adult": false,
+    "is_buyee_possible": false,
+    "is_end_of_sale": false,
+    "is_placeholder": false,
+    "is_sold_out": false,
+    "name": "シフォン -Chiffon-【オリジナル3Dモデル】",
+    "published_at": "2023-12-20T17:59:40.000+09:00",
+    "price": "¥ 6,000",
+    "purchase_limit": null,
+    "shipping_info": "発送までの日数：7日以内",
+    "small_stock": null,
+    "url": "https://komado.booth.pm/items/5354471",
+    "wish_list_url": "https://booth.pm/items/5354471/wish_list",
+    "wish_lists_count": 15518,
+    "wished": false,
+    "buyee_variations": [],
+    "category": {
+        "id": 208,
+        "name": "3Dキャラクター",
+        "parent": {
+            "name": "3Dモデル",
+            "url": "https://booth.pm/ja/browse/3D%E3%83%A2%E3%83%87%E3%83%AB"
+        },
+        "url": "https://booth.pm/ja/browse/3D%E3%82%AD%E3%83%A3%E3%83%A9%E3%82%AF%E3%82%BF%E3%83%BC"
+    },
+    "embeds": [],
+    "images": [
+        {
+            "caption": null,
+            "original": "https://booth.pximg.net/61a3b2d7-b4b1-4f97-9e48-ffe959b26ae9/i/5354471/c42b543c-a334-4f18-bd26-a5cf23e2a61b_base_resized.jpg",
+            "resized": "https://booth.pximg.net/c/72x72_a2_g5/61a3b2d7-b4b1-4f97-9e48-ffe959b26ae9/i/5354471/c42b543c-a334-4f18-bd26-a5cf23e2a61b_base_resized.jpg"
+        },
+        {
+            "caption": null,
+            "original": "https://booth.pximg.net/61a3b2d7-b4b1-4f97-9e48-ffe959b26ae9/i/5354471/7b4bdb70-f794-48ed-a446-5be1d400bc57_base_resized.jpg",
+            "resized": "https://booth.pximg.net/c/72x72_a2_g5/61a3b2d7-b4b1-4f97-9e48-ffe959b26ae9/i/5354471/7b4bdb70-f794-48ed-a446-5be1d400bc57_base_resized.jpg"
+        },
+        {
+            "caption": null,
+            "original": "https://booth.pximg.net/61a3b2d7-b4b1-4f97-9e48-ffe959b26ae9/i/5354471/af083b74-be13-42ad-b4ac-ac6c86f96028_base_resized.jpg",
+            "resized": "https://booth.pximg.net/c/72x72_a2_g5/61a3b2d7-b4b1-4f97-9e48-ffe959b26ae9/i/5354471/af083b74-be13-42ad-b4ac-ac6c86f96028_base_resized.jpg"
+        },
+        {
+            "caption": null,
+            "original": "https://booth.pximg.net/61a3b2d7-b4b1-4f97-9e48-ffe959b26ae9/i/5354471/e7ffb2ac-905c-429c-8d7a-323e21fb17fc_base_resized.jpg",
+            "resized": "https://booth.pximg.net/c/72x72_a2_g5/61a3b2d7-b4b1-4f97-9e48-ffe959b26ae9/i/5354471/e7ffb2ac-905c-429c-8d7a-323e21fb17fc_base_resized.jpg"
+        },
+        {
+            "caption": null,
+            "original": "https://booth.pximg.net/61a3b2d7-b4b1-4f97-9e48-ffe959b26ae9/i/5354471/3a030fe7-4bbf-4f80-b263-9631d9fc4946_base_resized.jpg",
+            "resized": "https://booth.pximg.net/c/72x72_a2_g5/61a3b2d7-b4b1-4f97-9e48-ffe959b26ae9/i/5354471/3a030fe7-4bbf-4f80-b263-9631d9fc4946_base_resized.jpg"
+        },
+        {
+            "caption": null,
+            "original": "https://booth.pximg.net/61a3b2d7-b4b1-4f97-9e48-ffe959b26ae9/i/5354471/d36a42ec-0a01-43bb-bb53-a9eb92113faf_base_resized.jpg",
+            "resized": "https://booth.pximg.net/c/72x72_a2_g5/61a3b2d7-b4b1-4f97-9e48-ffe959b26ae9/i/5354471/d36a42ec-0a01-43bb-bb53-a9eb92113faf_base_resized.jpg"
+        },
+        {
+            "caption": null,
+            "original": "https://booth.pximg.net/61a3b2d7-b4b1-4f97-9e48-ffe959b26ae9/i/5354471/7340031f-b728-41b0-86b5-d79200137490_base_resized.jpg",
+            "resized": "https://booth.pximg.net/c/72x72_a2_g5/61a3b2d7-b4b1-4f97-9e48-ffe959b26ae9/i/5354471/7340031f-b728-41b0-86b5-d79200137490_base_resized.jpg"
+        },
+        {
+            "caption": null,
+            "original": "https://booth.pximg.net/61a3b2d7-b4b1-4f97-9e48-ffe959b26ae9/i/5354471/a1dfacf4-c3d2-4b71-9dd6-da53cc01e4b9_base_resized.jpg",
+            "resized": "https://booth.pximg.net/c/72x72_a2_g5/61a3b2d7-b4b1-4f97-9e48-ffe959b26ae9/i/5354471/a1dfacf4-c3d2-4b71-9dd6-da53cc01e4b9_base_resized.jpg"
+        }
+    ],
+    "order": null,
+    "gift": null,
+    "report_url": "https://komado.booth.pm/items/5354471/report",
+    "share": {
+        "hashtags": [
+            "booth_pm"
+        ],
+        "text": "シフォン -Chiffon-【オリジナル3Dモデル】 | あまとうさぎ"
+    },
+    "shop": {
+        "name": "あまとうさぎ",
+        "subdomain": "komado",
+        "thumbnail_url": "https://booth.pximg.net/c/48x48/users/5084487/icon_image/61e55bf5-77b1-4070-883d-07cfc263a3f5_base_resized.jpg",
+        "url": "https://komado.booth.pm/",
+        "verified": false
+    },
+    "sound": null,
+    "tags": [
+        {
+            "name": "VRChat",
+            "url": "https://booth.pm/ja/items?tags%5B%5D=VRChat"
+        }
+    ],
+    "tag_banners": [
+        {
+            "image_url": "https://booth.pximg.net/c/150x150/8a7426aa-ba62-4ef0-9e7d-2c8ea96e7c9b/i/5058077/a18424fe-a56e-411a-9c47-27c56909593c_base_resized.jpg",
+            "name": "VRChat",
+            "url": "https://booth.pm/ja/items?tags%5B%5D=VRChat"
+        }
+    ],
+    "tag_combination": {
+        "category": "3Dキャラクター",
+        "tag": "VRChat",
+        "url": "https://booth.pm/ja/browse/3D%E3%82%AD%E3%83%A3%E3%83%A9%E3%82%AF%E3%82%BF%E3%83%BC?tags%5B%5D=VRChat"
+    },
+    "tracks": null,
+    "variations": [
+        {
+            "buyee_html": null,
+            "downloadable": null,
+            "factory_image_url": null,
+            "has_download_code": false,
+            "id": 9036911,
+            "is_anshin_booth_pack": false,
+            "is_empty_allocatable_stock_with_preorder": false,
+            "is_empty_stock": false,
+            "is_factory_item": false,
+            "is_mailbin": false,
+            "is_waiting_on_arrival": false,
+            "name": null,
+            "order_url": null,
+            "price": 6000,
+            "small_stock": null,
+            "status": "addable_to_cart",
+            "type": "digital"
+        }
+    ]
+}
