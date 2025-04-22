@@ -55,7 +55,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
                 //     throw new Error('取得した商品データが空または無効です');
                 // }
                 // sendResponse({ data: Array.from(new Uint8Array(arrayBuffer)) });
-                console.log("arrayBuffer:", arrayBuffer)
+                console.log("arrayBuffer:", arrayBuffer);
                 if (!arrayBuffer) {
                     throw new Error('arrayBufferがnullまたはundefinedです');
                 }
@@ -64,6 +64,8 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
                 }
                 const byteArray = new Uint8Array(arrayBuffer);
                 sendResponse({ data: Array.from(byteArray) });
+                // sendResponse({ data: arrayBuffer }); // ←そのまま送る←これ無理．
+
             })
             .catch(error => {
                 console.error("フェッチエラー:", error);
@@ -72,6 +74,22 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 
         return true; // 非同期応答のためにtrueを返す
     }
+    //----------------------------------------------------------------
+    // if (message.action === "fetchItem") {
+    //     fetch(message.url)
+    //         .then(response => response.arrayBuffer())
+    //         .then(arrayBuffer => {
+    //             const blob = new Blob([arrayBuffer]);
+    //             const blobUrl = URL.createObjectURL(blob);//これはbackgroundでは使えないらしい
+    //             sendResponse({ blobUrl }); // ✅ これだけ返す！
+    //         })
+    //         .catch(error => {
+    //             console.error("ファイル取得エラー:", error);
+    //             sendResponse({ error: error.message });
+    //         });
+    //     return true;
+    // }
+    //------------------------------------------------------------------
     if (message.action === "fetchThumbnail") {
         //サムネイル画像を取得するときに使われる
         console.log("fetchThumbnail");
@@ -91,5 +109,18 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
                 sendResponse({ error: error.message, data: null });
             });
         return true; // 非同期応答のためにtrueを返す
+    }
+    if (message.action === 'downloadZip') {
+        chrome.downloads.download({
+            url: message.blobUrl,
+            filename: message.filename,
+            saveAs: true
+        }, downloadId => {
+            if (chrome.runtime.lastError) {
+                console.error('Download failed:', chrome.runtime.lastError);
+            } else {
+                console.log('Download started:', downloadId);
+            }
+        });
     }
 });

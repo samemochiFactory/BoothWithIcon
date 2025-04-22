@@ -1,7 +1,7 @@
 // JSZipライブラリをインポート（manifest.jsonにJSZipを追加）
 import JSZip from 'jszip'; // ✅ npmモジュールからちゃんとバンドルされる
-import * as icojs from 'icojs';
-import { saveAs } from 'file-saver';
+import { isICO, parseICO } from 'icojs/browser';
+// import { saveAs } from 'file-saver';
 
 function getItemUrl(itemUrlElement) {
     const itemUrl = itemUrlElement ? itemUrlElement.href : 'Unknown';
@@ -56,16 +56,41 @@ async function getItemBlob(downloadUrl) {
             (response) => {
                 if (response && response.data) {
                     // ArrayBuffer を受け取った前提で Blob に変換
-                    const byteArray = new Uint8Array(response.data);
+                    const byteArray = new Uint8Array(response.data);//いけるけどサイズ制限がある
+                    // const byteArray = response.data;//←これ無理．そのまま送れない．のでUint8Arrayに変換している．
                     const blob = new Blob([byteArray]);
                     resolve(blob);
                 } else {
                     reject(new Error("商品データの取得に失敗しました"));
                 }
+                // if (response && response.blobUrl) {
+                //     (async () => {
+                //         try {
+                //             const res = await fetch(response.blobUrl);
+                //             const blob = await res.blob();
+                //             resolve(blob);
+                //         } catch (e) {
+                //             reject(new Error("Blobの取得に失敗: " + e));
+                //         }
+                //     })();
+                // } else {
+                //     reject(new Error("商品データの取得に失敗しました"));
+                // }
             }
         );
     });
 }
+//↓直接fetch(CORSで無理)
+// async function getItemBlob(downloadUrl) {
+//     try {
+//         const response = await fetch(downloadUrl);
+//         if (!response.ok) throw new Error("ダウンロード失敗");
+//         const blob = await response.blob();
+//         return blob;
+//     } catch (err) {
+//         throw new Error("Blobの取得に失敗: " + err.message);
+//     }
+// }
 
 async function getThumbnail(thumbnailUrl) {
     return new Promise((resolve, reject) => {
@@ -88,23 +113,20 @@ async function getThumbnail(thumbnailUrl) {
     });
 }
 
-async function createZipArchive(productFileBlob, icoData, shopName, itemName) {
+async function createZipArchive(productFileBlob, icoData, fileName) {
     const zip = new JSZip();
-    // zip.file(`${shopName}_${itemName}.ico`, icoData);
-    zip.file(`boothThumbnail.ico`, icoData);
-    // zip.file(`${shopName}_${itemName}.zip`, productFileBlob); // 商品ファイルを追加
-    zip.file(`${itemName}.zip`, productFileBlob); // 商品ファイルを追加
-    // zip.file("desktop.ini", `[FolderDescription]\nIconResource=${shopName}_${itemName}.ico,0`);
-    zip.file("desktop.ini", `[.ShellClassInfo]\nIconResource=boothThumbnail.ico,0\n[ViewState]\nMode=\nVid=\nFolderType=Generic`);
+    zip.file(`boothThumbnail.ico`, icoData);//iconを追加
+    // zip.file(`${itemName}.zip`, productFileBlob); // 商品ファイルを追加
+    zip.file(fileName, productFileBlob); // 商品ファイルを追加
+    zip.file("desktop.ini", `[.ShellClassInfo]\nIconResource=boothThumbnail.ico,0\n[ViewState]\nMode=\nVid=\nFolderType=Generic`);//desktop.iniを追加
 
-    // return zip.generate({ type: "blob" });
-    return zip.generateAsync({ type: "blob" }).then(function (content) {
-        saveAs(content, `${shopName}_${itemName}.zip`);
-
-    });
+    // return zip.generateAsync({ type: "blob" }).then(function (content) {
+    //     saveAs(content, fileName);
+    // });
+    return zip.generateAsync({ type: "blob" });
 }
 
-async function downloadWithZip(downloadUrl, shopName, itemName) {
+async function downloadWithZip(downloadUrl, fileName) {
     console.log("downloading...");
     try {
         // 商品ファイルをBlobとして取得
@@ -143,21 +165,15 @@ async function downloadWithZip(downloadUrl, shopName, itemName) {
         });
 
         // Zipアーカイブを作成
-        const zipBlob = await createZipArchive(productFileBlob, icoData, shopName, itemName);
+        const zipBlob = await createZipArchive(productFileBlob, icoData, fileName);
 
         // ダウンロード処理
-        chrome.downloads.download({
-            url: URL.createObjectURL(zipBlob), // BlobからURLを作成
-            filename: `${shopName}_${itemName}.zip`,
-            saveAs: true
-        }, (downloadId) => {
-            if (chrome.runtime.lastError) {
-                console.error('Download error:', chrome.runtime.lastError);
-            } else {
-                console.log('Download started:', downloadId);
-            }
+        chrome.runtime.sendMessage({
+            action: 'downloadZip',
+            blobUrl: URL.createObjectURL(zipBlob),
+            // filename: `${shopName}_${itemName}.zip`
+            filename: fileName
         });
-
     } catch (error) {
         console.error('Zipアーカイブの作成またはダウンロード中にエラーが発生しました:', error);
     }
@@ -165,8 +181,9 @@ async function downloadWithZip(downloadUrl, shopName, itemName) {
 
 function createDownloadButton(shopName, itemName, itemUrlElement) {
     // ファイル名を生成
-    const fileName = `${sanitizeFileName(shopName)}_${sanitizeFileName(itemName)}.zip`;
-    console.log('ファイル名:', fileName);
+    // const fileName = `${sanitizeFileName(shopName)}_${sanitizeFileName(itemName)}.zip`;
+    // const fileName = sanitizeFileName(`${shopName}_${itemName}.zip`);
+    // console.log('ファイル名:', fileName);
     document.querySelectorAll('a[href*="/downloadables/"]').forEach(downloadLink => {
         const downloadUrl = downloadLink ? downloadLink.href : null;
         // 既にカスタムボタンが追加されていればスキップ
@@ -180,7 +197,7 @@ function createDownloadButton(shopName, itemName, itemUrlElement) {
         const authorElement = productContainer.querySelector('.text-text-gray600');
 
         if (!titleElement || !authorElement) return;
-        //ここ，サイトから商品名作ってるので404でも見た目はちゃんと見えてしまうが，DL時にエラーとなる
+        // ここ，サイトから商品名作ってるので404でも見た目はちゃんと見えてしまうが，DL時にエラーとなる
         const title = titleElement.textContent.trim().replace(/\s+/g, ' ');
         const author = authorElement.textContent.trim().replace(/\s+/g, ' ');
         const filename = `${author}_${title}.zip`;
@@ -191,14 +208,16 @@ function createDownloadButton(shopName, itemName, itemUrlElement) {
 
         customButton.addEventListener('click', () => {
             console.log("click!");
-            console.log('ファイル名:', fileName);
+            console.log('ファイル名:', filename);
 
             if (!downloadUrl) {
                 console.error('ダウンロードURLが取得できていません');
                 return;
             }
             //iconとファイルをまとめてDL(アイコン自動設定付き)
-            downloadWithZip(downloadUrl, author, title);
+            // downloadWithZip(downloadUrl, author, title);
+            downloadWithZip(downloadUrl, filename);
+
             //----普通にファイル名変更だけしてDLする場合----
             // chrome.runtime.sendMessage({
             //     action: 'download',

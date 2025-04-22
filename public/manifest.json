@@ -15,7 +15,7 @@
         "type": "module"
     },
     "action": {
-        "default_popup": "popup.html",
+        "default_popup": "src/popup.html",
         "default_title": "Click me!"
     },
     "icons": {
@@ -39,7 +39,8 @@
                 "https://accounts.booth.pm/*"
             ],
             "resources": [
-                "src/content.js"
+                "content.js",
+                "*.map"
             ]
         }
     ]
