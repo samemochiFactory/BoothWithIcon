@@ -1,7 +1,12 @@
 // JSZipライブラリをインポート（manifest.jsonにJSZipを追加）
 import JSZip from 'jszip'; // ✅ npmモジュールからちゃんとバンドルされる
-import { isICO, parseICO } from 'icojs/browser';
+// import { isICO, parseICO } from 'icojs/browser';
+// import { encode } from 'icojs/browser';
+// import icojs from 'icojs/browser';
+
 // import { saveAs } from 'file-saver';
+// import { convertCanvasToBmp } from 'canvas-to-bmp';
+import { PngIcoConverter } from './png2icojs';
 
 function getItemUrl(itemUrlElement) {
     const itemUrl = itemUrlElement ? itemUrlElement.href : 'Unknown';
@@ -63,19 +68,6 @@ async function getItemBlob(downloadUrl) {
                 } else {
                     reject(new Error("商品データの取得に失敗しました"));
                 }
-                // if (response && response.blobUrl) {
-                //     (async () => {
-                //         try {
-                //             const res = await fetch(response.blobUrl);
-                //             const blob = await res.blob();
-                //             resolve(blob);
-                //         } catch (e) {
-                //             reject(new Error("Blobの取得に失敗: " + e));
-                //         }
-                //     })();
-                // } else {
-                //     reject(new Error("商品データの取得に失敗しました"));
-                // }
             }
         );
     });
@@ -91,6 +83,7 @@ async function getItemBlob(downloadUrl) {
 //         throw new Error("Blobの取得に失敗: " + err.message);
 //     }
 // }
+//----------------------------------------------------------------------------
 
 async function getThumbnail(thumbnailUrl) {
     return new Promise((resolve, reject) => {
@@ -142,27 +135,52 @@ async function downloadWithZip(downloadUrl, fileName) {
         const imageData = await getThumbnail(thumbnailUrl);
 
         // ICO形式への変換 (ライブラリを使用することを推奨)
-        // ここでICOエンコード処理を実装またはライブラリを使用する
-        // 例：iconv-lite を使用する場合
-        // const icoData = convertToIco(imageData); // 自分で実装するか、ライブラリを使用
 
-        const icoData = await new Promise((resolve, reject) => {
+        // const icoData = await new Promise((resolve, reject) => {
+        //     const canvas = document.createElement('canvas');
+        //     const ctx = canvas.getContext('2d');
+        //     const img = new Image();
+        //     img.onload = () => {
+        //         canvas.width = 300; // サムネイルのサイズに合わせて調整
+        //         canvas.height = 300;
+        //         ctx.drawImage(img, 0, 0);
+        //         // CanvasからBlobを作成し、ICO形式として返す（簡易的な例）
+        //         canvas.toBlob(blob => {
+        //             resolve(blob);
+        //         }, 'image/png'); // ICO形式は直接サポートされていないため、PNGで代替
+        //     };
+        //     img.onerror = reject;
+        //     img.src = URL.createObjectURL(imageData);
+        // });
+        const icoData = await new Promise(async (resolve, reject) => {
             const canvas = document.createElement('canvas');
             const ctx = canvas.getContext('2d');
             const img = new Image();
-            img.onload = () => {
-                canvas.width = 300; // サムネイルのサイズに合わせて調整
-                canvas.height = 300;
-                ctx.drawImage(img, 0, 0);
+            img.onload = async () => {
+                const size = 256; // ICO最大サイズ
+                canvas.width = size;
+                canvas.height = size;
+                ctx.drawImage(img, 0, 0, size, size);
 
-                // CanvasからBlobを作成し、ICO形式として返す（簡易的な例）
-                canvas.toBlob(blob => {
-                    resolve(blob);
-                }, 'image/png'); // ICO形式は直接サポートされていないため、PNGで代替
+                // canvas から PNG Blob を作成
+                canvas.toBlob(async (pngBlob) => {
+                    if (!pngBlob) return reject("PNG blob generation failed");
+
+                    const converter = new PngIcoConverter();
+                    try {
+                        const icoBlob = await converter.convertToBlobAsync([
+                            { png: pngBlob }
+                        ]);
+                        resolve(icoBlob); // 正しい ICO 形式の Blob を返す
+                    } catch (e) {
+                        reject(e);
+                    }
+                }, 'image/png');
             };
             img.onerror = reject;
-            img.src = URL.createObjectURL(imageData);
+            img.src = URL.createObjectURL(imageData); // imageData: Blob or File
         });
+
 
         // Zipアーカイブを作成
         const zipBlob = await createZipArchive(productFileBlob, icoData, fileName);
@@ -215,8 +233,7 @@ function createDownloadButton(shopName, itemName, itemUrlElement) {
                 return;
             }
             //iconとファイルをまとめてDL(アイコン自動設定付き)
-            // downloadWithZip(downloadUrl, author, title);
-            downloadWithZip(downloadUrl, filename);
+            downloadWithZip(downloadUrl, sanitizeFileName(filename));
 
             //----普通にファイル名変更だけしてDLする場合----
             // chrome.runtime.sendMessage({

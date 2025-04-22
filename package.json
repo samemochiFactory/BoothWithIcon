@@ -1,5 +1,6 @@
 {
   "dependencies": {
+    "canvas-to-bmp": "^1.0.0",
     "file-saver": "^2.0.5",
     "icojs": "^0.19.5",
     "jszip": "^3.10.1"
