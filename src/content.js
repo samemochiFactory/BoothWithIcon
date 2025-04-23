@@ -104,7 +104,7 @@ async function getItemBlob(downloadUrl) {
 function concatenateUint8Arrays(arrays) {
     // 合計サイズを計算
     const totalLength = arrays.reduce((acc, array) => acc + array.length, 0);
-
+    console.log("hoge")
     // 新しい配列を作成
     const result = new Uint8Array(totalLength);
 
