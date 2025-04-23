@@ -38,57 +38,65 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 
         return true; // 非同期応答のためにtrueを返す
     }
-    if (message.action === "fetchItem") {
-        //商品データを取得するときに使われる
-        console.log("fetchItem");
-        console.log(message.url);
-        fetch(message.url)
-            .then(response => {
-                console.log("レスポンスステータス:", response.status);
-                if (!response.ok) {
-                    throw new Error(`レスポンスステータス: ${response.status}`);
-                }
-                return response.arrayBuffer();
-            })
-            .then(arrayBuffer => {
-                // if (!arrayBuffer || arrayBuffer.byteLength === 0) {
-                //     throw new Error('取得した商品データが空または無効です');
-                // }
-                // sendResponse({ data: Array.from(new Uint8Array(arrayBuffer)) });
-                console.log("arrayBuffer:", arrayBuffer);
-                if (!arrayBuffer) {
-                    throw new Error('arrayBufferがnullまたはundefinedです');
-                }
-                if (arrayBuffer.byteLength === 0) {
-                    throw new Error('取得した商品データが空です');
-                }
-                const byteArray = new Uint8Array(arrayBuffer);
-                sendResponse({ data: Array.from(byteArray) });
-                // sendResponse({ data: arrayBuffer }); // ←そのまま送る←これ無理．
-
-            })
-            .catch(error => {
-                console.error("フェッチエラー:", error);
-                sendResponse({ error: error.message, data: null });
-            });
-
-        return true; // 非同期応答のためにtrueを返す
-    }
-    //----------------------------------------------------------------
     // if (message.action === "fetchItem") {
+    //     //商品データを取得するときに使われる
+    //     console.log("fetchItem");
+    //     console.log(message.url);
     //     fetch(message.url)
-    //         .then(response => response.arrayBuffer())
+    //         .then(response => {
+    //             console.log("レスポンスステータス:", response.status);
+    //             if (!response.ok) {
+    //                 throw new Error(`レスポンスステータス: ${response.status}`);
+    //             }
+    //             return response.arrayBuffer();
+    //         })
     //         .then(arrayBuffer => {
-    //             const blob = new Blob([arrayBuffer]);
-    //             const blobUrl = URL.createObjectURL(blob);//これはbackgroundでは使えないらしい
-    //             sendResponse({ blobUrl }); // ✅ これだけ返す！
+    //             // if (!arrayBuffer || arrayBuffer.byteLength === 0) {
+    //             //     throw new Error('取得した商品データが空または無効です');
+    //             // }
+    //             // sendResponse({ data: Array.from(new Uint8Array(arrayBuffer)) });
+    //             console.log("arrayBuffer:", arrayBuffer);
+    //             if (!arrayBuffer) {
+    //                 throw new Error('arrayBufferがnullまたはundefinedです');
+    //             }
+    //             if (arrayBuffer.byteLength === 0) {
+    //                 throw new Error('取得した商品データが空です');
+    //             }
+    //             const byteArray = new Uint8Array(arrayBuffer);
+    //             sendResponse({ data: Array.from(byteArray) });
+    //             // sendResponse({ data: arrayBuffer }); // ←そのまま送る←これ無理．
+
     //         })
     //         .catch(error => {
-    //             console.error("ファイル取得エラー:", error);
-    //             sendResponse({ error: error.message });
+    //             console.error("フェッチエラー:", error);
+    //             sendResponse({ error: error.message, data: null });
     //         });
-    //     return true;
+
+    //     return true; // 非同期応答のためにtrueを返す
     // }
+    //----------------------------------------------------------------
+    if (message.action === "fetchItem") {
+        console.log("fetchItem");
+
+        fetch(message.url)
+            .then(response => response.blob())
+            .then(blob => {
+                const reader = new FileReader();
+                reader.onload = function () {
+                    const blobUrl = reader.result;
+                    console.log(blobUrl);
+                    sendResponse({ blobUrl: blobUrl });
+                };
+                // const blobUrl = URL.createObjectURL(blob);//これはbackgroundでは使えないらしい
+                console.log("converting blob to blobUrl");
+                reader.readAsDataURL(blob);//base64 encoded?
+            })
+            .catch(error => {
+                console.error("ファイル取得エラー:", error);
+                sendResponse({ error: error.message });
+            });
+        return true;
+    }
     //------------------------------------------------------------------
     if (message.action === "fetchThumbnail") {
         //サムネイル画像を取得するときに使われる

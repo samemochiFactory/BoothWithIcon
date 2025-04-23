@@ -1,11 +1,6 @@
 // JSZipライブラリをインポート（manifest.jsonにJSZipを追加）
 import JSZip from 'jszip'; // ✅ npmモジュールからちゃんとバンドルされる
-// import { isICO, parseICO } from 'icojs/browser';
-// import { encode } from 'icojs/browser';
-// import icojs from 'icojs/browser';
-
 // import { saveAs } from 'file-saver';
-// import { convertCanvasToBmp } from 'canvas-to-bmp';
 import { PngIcoConverter } from './png2icojs';
 
 function getItemUrl(itemUrlElement) {
@@ -50,7 +45,28 @@ async function getItemInfo(item_url) {
 //             });
 //     });
 // }
-// 商品データを取得して Blob に変換する関数
+// 商品データを取得して Blob に変換する関数(動作済)
+// async function getItemBlob(downloadUrl) {
+//     return new Promise((resolve, reject) => {
+//         chrome.runtime.sendMessage(
+//             {
+//                 action: "fetchItem",
+//                 url: downloadUrl
+//             },
+//             (response) => {
+//                 if (response && response.data) {
+//                     // ArrayBuffer を受け取った前提で Blob に変換
+//                     const byteArray = new Uint8Array(response.data);//いけるけどサイズ制限がある
+//                     // const byteArray = response.data;//←これ無理．そのまま送れない．のでUint8Arrayに変換している．
+//                     const blob = new Blob([byteArray]);
+//                     resolve(blob);
+//                 } else {
+//                     reject(new Error("商品データの取得に失敗しました"));
+//                 }
+//             }
+//         );
+//     });
+// }
 async function getItemBlob(downloadUrl) {
     return new Promise((resolve, reject) => {
         chrome.runtime.sendMessage(
@@ -58,13 +74,25 @@ async function getItemBlob(downloadUrl) {
                 action: "fetchItem",
                 url: downloadUrl
             },
-            (response) => {
-                if (response && response.data) {
-                    // ArrayBuffer を受け取った前提で Blob に変換
-                    const byteArray = new Uint8Array(response.data);//いけるけどサイズ制限がある
-                    // const byteArray = response.data;//←これ無理．そのまま送れない．のでUint8Arrayに変換している．
-                    const blob = new Blob([byteArray]);
-                    resolve(blob);
+            async (response) => {
+                if (response && response.blobUrl) {
+                    try {
+                        // // fetch でデータを取得（blobとして）
+                        // const res = await fetch(response.blobUrl);
+                        // const blob = await res.blob();
+                        // base64文字列からBlobを復元
+                        const base64Data = response.blobUrl.split(',')[1]; // "data:application/zip;base64,..." の後ろだけ
+                        const byteCharacters = atob(base64Data);
+                        const byteNumbers = new Array(byteCharacters.length);
+                        for (let i = 0; i < byteCharacters.length; i++) {
+                            byteNumbers[i] = byteCharacters.charCodeAt(i);
+                        }
+                        const byteArray = new Uint8Array(byteNumbers);
+                        const blob = new Blob([byteArray], { type: 'application/zip' });
+                        resolve(blob);
+                    } catch (e) {
+                        reject(new Error("Blobの取得に失敗: " + e));
+                    }
                 } else {
                     reject(new Error("商品データの取得に失敗しました"));
                 }
@@ -119,18 +147,18 @@ async function createZipArchive(productFileBlob, icoData, fileName) {
     return zip.generateAsync({ type: "blob" });
 }
 
-async function downloadWithZip(downloadUrl, fileName) {
+async function downloadWithZip(downloadUrl, thumbnailUrl, fileName) {
     console.log("downloading...");
     try {
         // 商品ファイルをBlobとして取得
         const productFileBlob = await getItemBlob(downloadUrl);
 
         // サムネイル画像をBlobとして取得し、ICO形式に変換
-        const thumbnailElement = document.querySelector('.l-library-item-thumbnail');
-        if (!thumbnailElement) {
-            throw new Error('サムネイル画像が見つかりません');
-        }
-        const thumbnailUrl = thumbnailElement.src;
+        // const thumbnailElement = document.querySelector('.l-library-item-thumbnail');//ここ，今の実装だと先頭要素だけを取っているので変更の必要あり
+        // if (!thumbnailElement) {
+        //     throw new Error('サムネイル画像が見つかりません');
+        // }
+        // const thumbnailUrl = thumbnailElement.src;
 
         const imageData = await getThumbnail(thumbnailUrl);
 
@@ -210,6 +238,13 @@ function createDownloadButton(shopName, itemName, itemUrlElement) {
         const productContainer = downloadLink.closest('.mb-16.bg-white');
         if (!productContainer) return;
 
+        //サムネイルのURLを取得
+        const thumbnailElement = productContainer.querySelector('.l-library-item-thumbnail');//ここ，今の実装だと先頭要素だけを取っているので変更の必要あり
+        if (!thumbnailElement) {
+            throw new Error('サムネイル画像が見つかりません');
+        }
+        const thumbnailUrl = thumbnailElement.src;
+
         // 商品タイトルと作者名の抽出
         const titleElement = productContainer.querySelector('.text-text-default');
         const authorElement = productContainer.querySelector('.text-text-gray600');
@@ -233,7 +268,7 @@ function createDownloadButton(shopName, itemName, itemUrlElement) {
                 return;
             }
             //iconとファイルをまとめてDL(アイコン自動設定付き)
-            downloadWithZip(downloadUrl, sanitizeFileName(filename));
+            downloadWithZip(downloadUrl, thumbnailUrl, sanitizeFileName(filename));
 
             //----普通にファイル名変更だけしてDLする場合----
             // chrome.runtime.sendMessage({
