@@ -29,89 +29,94 @@ async function getItemInfo(item_url) {
     });
 }
 
-// //商品データ取得させるやつ(旧)
-// async function getItem(downloadUrl) {
-//     return new Promise((resolve, reject) => {
-//         chrome.runtime.sendMessage(
-//             {
-//                 action: "fetchItem", url: downloadUrl
-//             }, (response) => {
-//                 if (response && response.data) {
-//                     resolve(response.data);
-//                 } else {
-//                     reject(new Error("データの取得に失敗しました"));
-//                     //ここ，商品ページが消えてると404返るのでなんとかしたい
-//                 }
-//             });
-//     });
-// }
-// 商品データを取得して Blob に変換する関数(動作済)
-// async function getItemBlob(downloadUrl) {
-//     return new Promise((resolve, reject) => {
-//         chrome.runtime.sendMessage(
-//             {
-//                 action: "fetchItem",
-//                 url: downloadUrl
-//             },
-//             (response) => {
-//                 if (response && response.data) {
-//                     // ArrayBuffer を受け取った前提で Blob に変換
-//                     const byteArray = new Uint8Array(response.data);//いけるけどサイズ制限がある
-//                     // const byteArray = response.data;//←これ無理．そのまま送れない．のでUint8Arrayに変換している．
-//                     const blob = new Blob([byteArray]);
-//                     resolve(blob);
-//                 } else {
-//                     reject(new Error("商品データの取得に失敗しました"));
-//                 }
-//             }
-//         );
-//     });
-// }
 async function getItemBlob(downloadUrl) {
     return new Promise((resolve, reject) => {
+        // 受信したチャンクを保存する配列
+        const receivedChunks = [];
+        let totalChunks = 0;
+        let blobType = 'application/zip';
+
+        // チャンク受信用のリスナー
+        const chunkListener = (message) => {
+            if (message.action === "receiveChunk") {
+                console.log(`チャンク受信: ${message.chunkIndex + 1}/${message.totalChunks}`);
+
+                // Base64データを抽出（データURLのヘッダー部分を削除）
+                const base64Data = message.dataUrl.split(',')[1];
+
+                // Base64をバイナリデータに変換
+                const byteCharacters = atob(base64Data);
+                const byteNumbers = new Array(byteCharacters.length);
+                for (let i = 0; i < byteCharacters.length; i++) {
+                    byteNumbers[i] = byteCharacters.charCodeAt(i);
+                }
+                const byteArray = new Uint8Array(byteNumbers);
+
+                // チャンクを保存
+                receivedChunks[message.chunkIndex] = byteArray;
+
+                // すべてのチャンクを受信したらBlobを作成
+                if (receivedChunks.filter(Boolean).length === totalChunks) {
+                    // チャンクをすべて結合
+                    const completeData = concatenateUint8Arrays(receivedChunks);
+                    const blob = new Blob([completeData], { type: blobType });
+
+                    // リスナーをクリーンアップ
+                    chrome.runtime.onMessage.removeListener(chunkListener);
+
+                    resolve(blob);
+                }
+            }
+        };
+
+        // リスナーを登録
+        chrome.runtime.onMessage.addListener(chunkListener);
+
+        // ダウンロードリクエストを送信
         chrome.runtime.sendMessage(
             {
                 action: "fetchItem",
                 url: downloadUrl
             },
-            async (response) => {
-                if (response && response.blobUrl) {
-                    try {
-                        // // fetch でデータを取得（blobとして）
-                        // const res = await fetch(response.blobUrl);
-                        // const blob = await res.blob();
-                        // base64文字列からBlobを復元
-                        const base64Data = response.blobUrl.split(',')[1]; // "data:application/zip;base64,..." の後ろだけ
-                        const byteCharacters = atob(base64Data);
-                        const byteNumbers = new Array(byteCharacters.length);
-                        for (let i = 0; i < byteCharacters.length; i++) {
-                            byteNumbers[i] = byteCharacters.charCodeAt(i);
-                        }
-                        const byteArray = new Uint8Array(byteNumbers);
-                        const blob = new Blob([byteArray], { type: 'application/zip' });
-                        resolve(blob);
-                    } catch (e) {
-                        reject(new Error("Blobの取得に失敗: " + e));
-                    }
-                } else {
-                    reject(new Error("商品データの取得に失敗しました"));
+            (response) => {
+                if (chrome.runtime.lastError) {
+                    chrome.runtime.onMessage.removeListener(chunkListener);
+                    reject(new Error("メッセージ送信エラー: " + chrome.runtime.lastError.message));
+                    return;
+                }
+
+                if (response.error) {
+                    chrome.runtime.onMessage.removeListener(chunkListener);
+                    reject(new Error(response.error));
+                    return;
+                }
+
+                if (response.status === "start") {
+                    console.log(`ダウンロード開始: 合計${response.totalChunks}チャンク, ${response.totalSize}バイト`);
+                    totalChunks = response.totalChunks;
+                    blobType = response.type || blobType;
                 }
             }
         );
     });
 }
-//↓直接fetch(CORSで無理)
-// async function getItemBlob(downloadUrl) {
-//     try {
-//         const response = await fetch(downloadUrl);
-//         if (!response.ok) throw new Error("ダウンロード失敗");
-//         const blob = await response.blob();
-//         return blob;
-//     } catch (err) {
-//         throw new Error("Blobの取得に失敗: " + err.message);
-//     }
-// }
-//----------------------------------------------------------------------------
+// Uint8Array の配列を1つの Uint8Array に結合する関数
+function concatenateUint8Arrays(arrays) {
+    // 合計サイズを計算
+    const totalLength = arrays.reduce((acc, array) => acc + array.length, 0);
+
+    // 新しい配列を作成
+    const result = new Uint8Array(totalLength);
+
+    // データをコピー
+    let offset = 0;
+    for (const array of arrays) {
+        result.set(array, offset);
+        offset += array.length;
+    }
+
+    return result;
+}
 
 async function getThumbnail(thumbnailUrl) {
     return new Promise((resolve, reject) => {
@@ -154,32 +159,7 @@ async function downloadWithZip(downloadUrl, thumbnailUrl, fileName) {
         const productFileBlob = await getItemBlob(downloadUrl);
 
         // サムネイル画像をBlobとして取得し、ICO形式に変換
-        // const thumbnailElement = document.querySelector('.l-library-item-thumbnail');//ここ，今の実装だと先頭要素だけを取っているので変更の必要あり
-        // if (!thumbnailElement) {
-        //     throw new Error('サムネイル画像が見つかりません');
-        // }
-        // const thumbnailUrl = thumbnailElement.src;
-
         const imageData = await getThumbnail(thumbnailUrl);
-
-        // ICO形式への変換 (ライブラリを使用することを推奨)
-
-        // const icoData = await new Promise((resolve, reject) => {
-        //     const canvas = document.createElement('canvas');
-        //     const ctx = canvas.getContext('2d');
-        //     const img = new Image();
-        //     img.onload = () => {
-        //         canvas.width = 300; // サムネイルのサイズに合わせて調整
-        //         canvas.height = 300;
-        //         ctx.drawImage(img, 0, 0);
-        //         // CanvasからBlobを作成し、ICO形式として返す（簡易的な例）
-        //         canvas.toBlob(blob => {
-        //             resolve(blob);
-        //         }, 'image/png'); // ICO形式は直接サポートされていないため、PNGで代替
-        //     };
-        //     img.onerror = reject;
-        //     img.src = URL.createObjectURL(imageData);
-        // });
         const icoData = await new Promise(async (resolve, reject) => {
             const canvas = document.createElement('canvas');
             const ctx = canvas.getContext('2d');
@@ -209,7 +189,6 @@ async function downloadWithZip(downloadUrl, thumbnailUrl, fileName) {
             img.src = URL.createObjectURL(imageData); // imageData: Blob or File
         });
 
-
         // Zipアーカイブを作成
         const zipBlob = await createZipArchive(productFileBlob, icoData, fileName);
 
@@ -226,10 +205,6 @@ async function downloadWithZip(downloadUrl, thumbnailUrl, fileName) {
 }
 
 function createDownloadButton(shopName, itemName, itemUrlElement) {
-    // ファイル名を生成
-    // const fileName = `${sanitizeFileName(shopName)}_${sanitizeFileName(itemName)}.zip`;
-    // const fileName = sanitizeFileName(`${shopName}_${itemName}.zip`);
-    // console.log('ファイル名:', fileName);
     document.querySelectorAll('a[href*="/downloadables/"]').forEach(downloadLink => {
         const downloadUrl = downloadLink ? downloadLink.href : null;
         // 既にカスタムボタンが追加されていればスキップ
@@ -253,6 +228,7 @@ function createDownloadButton(shopName, itemName, itemUrlElement) {
         // ここ，サイトから商品名作ってるので404でも見た目はちゃんと見えてしまうが，DL時にエラーとなる
         const title = titleElement.textContent.trim().replace(/\s+/g, ' ');
         const author = authorElement.textContent.trim().replace(/\s+/g, ' ');
+        // ファイル名を生成
         const filename = `${author}_${title}.zip`;
         //ボタン追加
         const customButton = document.createElement('button');
@@ -269,14 +245,6 @@ function createDownloadButton(shopName, itemName, itemUrlElement) {
             }
             //iconとファイルをまとめてDL(アイコン自動設定付き)
             downloadWithZip(downloadUrl, thumbnailUrl, sanitizeFileName(filename));
-
-            //----普通にファイル名変更だけしてDLする場合----
-            // chrome.runtime.sendMessage({
-            //     action: 'download',
-            //     url: downloadUrl,
-            //     filename: fileName
-            // });
-            //----------------------------------------------
         });
 
         // ボタンをこのリンクの直後に追加（ファイル単位に追加）
@@ -289,7 +257,9 @@ function sanitizeFileName(name) {
     return name.replace(/[\\/:*?"<>|]/g, '_');
 }
 
-async function main(itemUrlElements) {
+async function main() {
+    const selector = "a.no-underline[href*='/items/']";//商品リンクを含む要素(aタグ)のセレクタ
+    const itemUrlElements = document.querySelectorAll(selector);//全件取得
     for (const [i, itemUrlElement] of itemUrlElements.entries()) {
         //商品ページのURL+.jsonから商品情報を取得
         console.log('ItemURL' + i, itemUrlElement.href);
@@ -313,7 +283,4 @@ async function main(itemUrlElements) {
         }
     }
 }
-
-const selector = "a.no-underline[href*='/items/']";//商品リンクを含む要素(aタグ)のセレクタ
-const itemUrlElements = document.querySelectorAll(selector);//全件取得
-main(itemUrlElements);
+main();
