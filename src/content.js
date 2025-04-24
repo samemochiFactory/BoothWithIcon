@@ -60,16 +60,16 @@ function createDownloadButton(shopName, itemName, itemUrlElement) {
 
         //--------ボタン挿入--------
         const insertPointElements = productContainer.querySelector('.mt-16').children;
-
         console.log(insertPointElements);
-
-        for (const insertPointElement of insertPointElements) {
+        // ボタンをこのリンクの直後に追加（ファイル単位に追加）
+        for (const insertPointElement of insertPointElements) {//ファイルが複数ある場合に対応
             // 既にカスタムボタンが追加されていればスキップ
-            // if (downloadLinkElement.parentElement.querySelector('.custom-dl-button')) return;
-            // if (insertPointElement.parentElement.querySelector('.custom-dl-button')) return;
             if (insertPointElement.querySelector('.custom-dl-button')) continue;
 
             //ボタン追加
+            const customButtonWrapper = document.createElement("div");
+            customButtonWrapper.className = "custom-dl-button-wrapper";
+
             const customButtonElement = document.createElement('button');
             customButtonElement.classList.add("text-wrap");
             // customButton.classList.remove("text-nowrap");
@@ -88,35 +88,35 @@ function createDownloadButton(shopName, itemName, itemUrlElement) {
                 //iconとファイルをまとめてDL(アイコン自動設定付き)
                 downloadWithZip(downloadUrl, thumbnailUrl, sanitizeFileName(filename));
             });
-            // ボタンをこのリンクの直後に追加（ファイル単位に追加）
-            // downloadLinkElement.parentElement.appendChild(customButtonElement);
-            // const insertPointElement = downloadLinkElement.closest('.mt-16.desktop');
-            insertPointElement.appendChild(customButtonElement);
+
+            customButtonWrapper.appendChild(customButtonElement);//add btn
+            //progressBar
+            const progressBarElement = createProgressBar();
+            customButtonWrapper.appendChild(progressBarElement);//add progressBar
+
+            insertPointElement.appendChild(customButtonWrapper);
         }
-        // const insertPointElement = insertPointElements.item(0);
-        // if (!insertPointElement) {
-        //     console.log("挿入ポイントが見つかりません");
-        //     return;
-        // }
-
-
-        //progressBar
-        // const progressWrapper = document.createElement("div");
-        // progressWrapper.className = "progress";
-        // progressWrapper.style.height = "20px"; // 高さ調整（任意）
-        // progressWrapper.style.borderRadius = "10px"; // 外枠の角丸
-
-        // const progressBar = document.createElement("div");
-        // progressBar.className = "progress-bar";
-        // progressBar.style.width = "70%";  // 進捗
-        // progressBar.style.backgroundColor = "#fc4d50"//booth color
-        // progressBar.style.borderRadius = "10px"; // 中身の角丸
-        // progressBar.textContent = "70%";
-
-        // progressWrapper.appendChild(progressBar);
-        // downloadLinkElement.parentElement.appendChild(progressWrapper);
     });
+}
 
+function createProgressBar() {
+    //Wrapper
+    const progressWrapperElement = document.createElement("div");
+    progressWrapperElement.className = "progress";
+    progressWrapperElement.style.height = "20px"; // 高さ調整（任意）
+    progressWrapperElement.style.borderRadius = "10px"; // 外枠の角丸
+
+    //progressBar
+    const progressBar = document.createElement("div");
+    progressBar.className = "progress-bar";
+    progressBar.style.width = "70%";  // 進捗
+    progressBar.style.backgroundColor = "#fc4d50"//booth image color
+    progressBar.style.borderRadius = "10px"; // 中身の角丸
+    progressBar.textContent = "70%";
+
+    progressWrapperElement.appendChild(progressBar);
+
+    return progressWrapperElement
 }
 
 async function main() {
