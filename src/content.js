@@ -1,7 +1,6 @@
 // JSZipライブラリをインポート（manifest.jsonにJSZipを追加）
-import JSZip from 'jszip'; // ✅ npmモジュールからちゃんとバンドルされる
-// import { saveAs } from 'file-saver';
-import { PngIcoConverter } from './png2icojs';
+import JSZip from 'jszip';
+import { getIconFromPngUrl } from './module';
 
 function getItemUrl(itemUrlElement) {
     const itemUrl = itemUrlElement ? itemUrlElement.href : 'Unknown';
@@ -23,7 +22,7 @@ async function getItemInfo(item_url) {
                     resolve(response.data);
                 } else {
                     reject(new Error("商品データの取得に失敗しました"));
-                    //ここ，商品ページが消えてると404返るのでなんとかしたい
+                    //ここ，商品ページが消えてると404返る
                 }
             });
     });
@@ -104,7 +103,7 @@ async function getItemBlob(downloadUrl) {
 function concatenateUint8Arrays(arrays) {
     // 合計サイズを計算
     const totalLength = arrays.reduce((acc, array) => acc + array.length, 0);
-
+    console.log("hoge")
     // 新しい配列を作成
     const result = new Uint8Array(totalLength);
 
@@ -118,86 +117,47 @@ function concatenateUint8Arrays(arrays) {
     return result;
 }
 
-async function getThumbnail(thumbnailUrl) {
-    return new Promise((resolve, reject) => {
-        chrome.runtime.sendMessage(
-            {
-                action: "fetchThumbnail",
-                url: thumbnailUrl
-            },
-            (response) => {
-                if (response && response.data) {
-                    // ArrayBuffer を受け取った前提で Blob に変換
-                    const byteArray = new Uint8Array(response.data);
-                    const blob = new Blob([byteArray]);
-                    resolve(blob);
-                } else {
-                    reject(new Error("商品データの取得に失敗しました"));
-                }
-            }
-        );
-    });
+function sanitizeFileName(name) {
+    return name.replace(/[\\/:*?"<>|]/g, '_');
 }
 
-async function createZipArchive(productFileBlob, icoData, fileName) {
-    const zip = new JSZip();
-    zip.file(`boothThumbnail.ico`, icoData);//iconを追加
-    // zip.file(`${itemName}.zip`, productFileBlob); // 商品ファイルを追加
-    zip.file(fileName, productFileBlob); // 商品ファイルを追加
-    zip.file("desktop.ini", `[.ShellClassInfo]\nIconResource=boothThumbnail.ico,0\n[ViewState]\nMode=\nVid=\nFolderType=Generic`);//desktop.iniを追加
+// async function createZipArchive(productFileBlob, icoBlob, fileName) {
+//     const zip = new JSZip();
+//     zip.file(`boothThumbnail.ico`, icoBlob);//iconを追加
+//     zip.file(fileName, productFileBlob); // 商品ファイルを追加
+//     zip.file("desktop.ini", `[.ShellClassInfo]\nIconResource=boothThumbnail.ico,0\n[ViewState]\nMode=\nVid=\nFolderType=Generic`);//desktop.iniを追加
+//     return zip.generateAsync({ type: "blob" });
+// }
 
-    // return zip.generateAsync({ type: "blob" }).then(function (content) {
-    //     saveAs(content, fileName);
-    // });
+async function createZipArchive(fileMap) {
+    const zip = new JSZip();
+    // ループ処理
+    for (const [fileName, blob] of fileMap) {
+        zip.file(fileName, blob);
+    }
     return zip.generateAsync({ type: "blob" });
 }
 
-async function downloadWithZip(downloadUrl, thumbnailUrl, fileName) {
+async function downloadWithZip(itemDownloadUrl, thumbnailUrl, itemFileName) {
     console.log("downloading...");
     try {
         // 商品ファイルをBlobとして取得
-        const productFileBlob = await getItemBlob(downloadUrl);
-
+        const productFileBlob = await getItemBlob(itemDownloadUrl);
         // サムネイル画像をBlobとして取得し、ICO形式に変換
-        const imageData = await getThumbnail(thumbnailUrl);
-        const icoData = await new Promise(async (resolve, reject) => {
-            const canvas = document.createElement('canvas');
-            const ctx = canvas.getContext('2d');
-            const img = new Image();
-            img.onload = async () => {
-                const size = 256; // ICO最大サイズ
-                canvas.width = size;
-                canvas.height = size;
-                ctx.drawImage(img, 0, 0, size, size);
-
-                // canvas から PNG Blob を作成
-                canvas.toBlob(async (pngBlob) => {
-                    if (!pngBlob) return reject("PNG blob generation failed");
-
-                    const converter = new PngIcoConverter();
-                    try {
-                        const icoBlob = await converter.convertToBlobAsync([
-                            { png: pngBlob }
-                        ]);
-                        resolve(icoBlob); // 正しい ICO 形式の Blob を返す
-                    } catch (e) {
-                        reject(e);
-                    }
-                }, 'image/png');
-            };
-            img.onerror = reject;
-            img.src = URL.createObjectURL(imageData); // imageData: Blob or File
-        });
-
+        const icoBlob = await getIconFromPngUrl(thumbnailUrl);
+        //zipの内容物を入れる
+        const fileMap = new Map();
+        fileMap.set(`boothThumbnail.ico`, icoBlob);//iconを追加
+        fileMap.set(itemFileName, productFileBlob);// 商品ファイルを追加
+        fileMap.set("desktop.ini", `[.ShellClassInfo]\nIconResource=boothThumbnail.ico,0\n[ViewState]\nMode=\nVid=\nFolderType=Generic`);//desktop.iniを追加
         // Zipアーカイブを作成
-        const zipBlob = await createZipArchive(productFileBlob, icoData, fileName);
+        const zipBlob = await createZipArchive(fileMap);
 
         // ダウンロード処理
         chrome.runtime.sendMessage({
             action: 'downloadZip',
             blobUrl: URL.createObjectURL(zipBlob),
-            // filename: `${shopName}_${itemName}.zip`
-            filename: fileName
+            filename: itemFileName
         });
     } catch (error) {
         console.error('Zipアーカイブの作成またはダウンロード中にエラーが発生しました:', error);
@@ -251,10 +211,6 @@ function createDownloadButton(shopName, itemName, itemUrlElement) {
         downloadLink.parentElement.appendChild(customButton);
     });
 
-}
-
-function sanitizeFileName(name) {
-    return name.replace(/[\\/:*?"<>|]/g, '_');
 }
 
 async function main() {
