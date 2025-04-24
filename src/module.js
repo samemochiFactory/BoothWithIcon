@@ -1,5 +1,6 @@
 import { PngIcoConverter } from './png2icojs';
 import JSZip from 'jszip';
+import { fileTypeFromBlob } from 'file-type';
 //------------------------------------------------------------------------------
 async function getThumbnail(thumbnailUrl) {
     return new Promise((resolve, reject) => {
@@ -166,33 +167,12 @@ async function createZipArchive(fileMap) {
 
 export async function downloadWithZip(itemDownloadUrl, thumbnailUrl, itemFileName) {
     console.log("downloading...");
-    const mimeToExt = {
-        'application/zip': 'zip',
-        'application/x-zip-compressed': 'zip',
-        'application/pdf': 'pdf',
-        'application/json': 'json',
-        'application/octet-stream': 'bin',
-        'image/png': 'png',
-        'image/jpeg': 'jpg',
-        'image/gif': 'gif',
-        'image/webp': 'webp',
-        'image/vnd.adobe.photoshop': 'psd',
-        'text/plain': 'txt',
-        'text/html': 'html',
-        'text/css': 'css',
-        'text/javascript': 'js',
-        'application/javascript': 'js',
-        'audio/mpeg': 'mp3',
-        'audio/wav': 'wav',
-        'video/mp4': 'mp4',
-        'application/vnd.rar': 'rar',
-        'application/x-rar-compressed': 'rar'
-        // 必要に応じて追加
-    };
     try {
         // 商品ファイルをBlobとして取得
         const productFileBlob = await getItemBlob(itemDownloadUrl);
-        const ext = mimeToExt[productFileBlob.type];
+        const filetype = await fileTypeFromBlob(productFileBlob);//=> {ext: 'txt', mime: 'text/plain'}
+        console.log("filetype from fileTypeFromBlob : ", filetype);
+        const ext = filetype['ext'];
         // サムネイル画像をBlobとして取得し、ICO形式に変換
         const icoBlob = await getIconFromPngUrl(thumbnailUrl);
         //zipの内容物を入れる
@@ -207,7 +187,7 @@ export async function downloadWithZip(itemDownloadUrl, thumbnailUrl, itemFileNam
         chrome.runtime.sendMessage({
             action: 'downloadZip',
             blobUrl: URL.createObjectURL(zipBlob),
-            filename: itemFileName
+            filename: itemFileName + '.zip'
         });
     } catch (error) {
         console.error('Zipアーカイブの作成またはダウンロード中にエラーが発生しました:', error);
