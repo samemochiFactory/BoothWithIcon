@@ -33,6 +33,9 @@
             ]
         }
     ],
+    "content-security_policy": {
+        "extension_pages": "script-src 'self'; object-src 'self'; style-src 'self' https://cdn.jsdelivr.net; "
+    },
     "web_accessible_resources": [
         {
             "matches": [

@@ -1,4 +1,5 @@
 // JSZipライブラリをインポート（manifest.jsonにJSZipを追加）
+import { forEach } from 'jszip';
 import { downloadWithZip } from './module';
 
 function getItemUrl(itemUrlElement) {
@@ -32,12 +33,11 @@ function sanitizeFileName(name) {
 }
 
 function createDownloadButton(shopName, itemName, itemUrlElement) {
-    document.querySelectorAll('a[href*="/downloadables/"]').forEach(downloadLink => {
-        const downloadUrl = downloadLink ? downloadLink.href : null;
-        // 既にカスタムボタンが追加されていればスキップ
-        if (downloadLink.parentElement.querySelector('.custom-dl-button')) return;
+    document.querySelectorAll('a[href*="/downloadables/"]').forEach(downloadLinkElement => {
+        const downloadUrl = downloadLinkElement ? downloadLinkElement.href : null;
 
-        const productContainer = downloadLink.closest('.mb-16.bg-white');
+        //商品カードを取得
+        const productContainer = downloadLinkElement.closest('.mb-16.bg-white');
         if (!productContainer) return;
 
         //サムネイルのURLを取得
@@ -57,24 +57,64 @@ function createDownloadButton(shopName, itemName, itemUrlElement) {
         const author = authorElement.textContent.trim().replace(/\s+/g, ' ');
         // ファイル名を生成
         const filename = `${author}_${title}.zip`;
-        //ボタン追加
-        const customButtonElement = document.createElement('button');
-        customButtonElement.textContent = `カスタムDL (${filename})`;
-        customButtonElement.className = 'custom-dl-button px-4 py-2 bg-blue-500 text-black rounded text-sm';
 
-        customButtonElement.addEventListener('click', () => {
-            console.log("click!");
-            console.log('ファイル名:', filename);
+        //--------ボタン挿入--------
+        const insertPointElements = productContainer.querySelector('.mt-16').children;
 
-            if (!downloadUrl) {
-                console.error('ダウンロードURLが取得できていません');
-                return;
-            }
-            //iconとファイルをまとめてDL(アイコン自動設定付き)
-            downloadWithZip(downloadUrl, thumbnailUrl, sanitizeFileName(filename));
-        });
-        // ボタンをこのリンクの直後に追加（ファイル単位に追加）
-        downloadLink.parentElement.appendChild(customButtonElement);
+        console.log(insertPointElements);
+
+        for (const insertPointElement of insertPointElements) {
+            // 既にカスタムボタンが追加されていればスキップ
+            // if (downloadLinkElement.parentElement.querySelector('.custom-dl-button')) return;
+            // if (insertPointElement.parentElement.querySelector('.custom-dl-button')) return;
+            if (insertPointElement.querySelector('.custom-dl-button')) continue;
+
+            //ボタン追加
+            const customButtonElement = document.createElement('button');
+            customButtonElement.classList.add("text-wrap");
+            // customButton.classList.remove("text-nowrap");
+            // customButtonElement.textContent = `カスタムDL (${filename})`;
+            customButtonElement.textContent = `カスタムDL`;
+            customButtonElement.className = 'btn btn-outline-primary custom-dl-button px-4 py-2 bg-blue-500 rounded text-sm';
+
+            customButtonElement.addEventListener('click', () => {
+                console.log("click!");
+                console.log('ファイル名:', filename);
+
+                if (!downloadUrl) {
+                    console.error('ダウンロードURLが取得できていません');
+                    return;
+                }
+                //iconとファイルをまとめてDL(アイコン自動設定付き)
+                downloadWithZip(downloadUrl, thumbnailUrl, sanitizeFileName(filename));
+            });
+            // ボタンをこのリンクの直後に追加（ファイル単位に追加）
+            // downloadLinkElement.parentElement.appendChild(customButtonElement);
+            // const insertPointElement = downloadLinkElement.closest('.mt-16.desktop');
+            insertPointElement.appendChild(customButtonElement);
+        }
+        // const insertPointElement = insertPointElements.item(0);
+        // if (!insertPointElement) {
+        //     console.log("挿入ポイントが見つかりません");
+        //     return;
+        // }
+
+
+        //progressBar
+        // const progressWrapper = document.createElement("div");
+        // progressWrapper.className = "progress";
+        // progressWrapper.style.height = "20px"; // 高さ調整（任意）
+        // progressWrapper.style.borderRadius = "10px"; // 外枠の角丸
+
+        // const progressBar = document.createElement("div");
+        // progressBar.className = "progress-bar";
+        // progressBar.style.width = "70%";  // 進捗
+        // progressBar.style.backgroundColor = "#fc4d50"//booth color
+        // progressBar.style.borderRadius = "10px"; // 中身の角丸
+        // progressBar.textContent = "70%";
+
+        // progressWrapper.appendChild(progressBar);
+        // downloadLinkElement.parentElement.appendChild(progressWrapper);
     });
 
 }
@@ -82,6 +122,13 @@ function createDownloadButton(shopName, itemName, itemUrlElement) {
 async function main() {
     const selector = "a.no-underline[href*='/items/']";//商品リンクを含む要素(aタグ)のセレクタ
     const itemUrlElements = document.querySelectorAll(selector);//全件取得
+
+    //Bootstrap追加
+    const link = document.createElement("link");
+    link.rel = "stylesheet";
+    link.href = "https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css";
+
+    document.head.appendChild(link);
     for (const [i, itemUrlElement] of itemUrlElements.entries()) {
         //商品ページのURL+.jsonから商品情報を取得
         console.log('ItemURL' + i, itemUrlElement.href);
