@@ -58,11 +58,11 @@ function createDownloadButton(shopName, itemName, itemUrlElement) {
         // ファイル名を生成
         const filename = `${author}_${title}.zip`;
         //ボタン追加
-        const customButton = document.createElement('button');
-        customButton.textContent = `カスタムDL (${filename})`;
-        customButton.className = 'custom-dl-button px-4 py-2 bg-blue-500 text-black rounded text-sm';
+        const customButtonElement = document.createElement('button');
+        customButtonElement.textContent = `カスタムDL (${filename})`;
+        customButtonElement.className = 'custom-dl-button px-4 py-2 bg-blue-500 text-black rounded text-sm';
 
-        customButton.addEventListener('click', () => {
+        customButtonElement.addEventListener('click', () => {
             console.log("click!");
             console.log('ファイル名:', filename);
 
@@ -74,7 +74,7 @@ function createDownloadButton(shopName, itemName, itemUrlElement) {
             downloadWithZip(downloadUrl, thumbnailUrl, sanitizeFileName(filename));
         });
         // ボタンをこのリンクの直後に追加（ファイル単位に追加）
-        downloadLink.parentElement.appendChild(customButton);
+        downloadLink.parentElement.appendChild(customButtonElement);
     });
 
 }

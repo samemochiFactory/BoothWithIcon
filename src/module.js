@@ -1,6 +1,6 @@
 import { PngIcoConverter } from './png2icojs';
 import JSZip from 'jszip';
-
+//------------------------------------------------------------------------------
 async function getThumbnail(thumbnailUrl) {
     return new Promise((resolve, reject) => {
         chrome.runtime.sendMessage(
@@ -65,22 +65,19 @@ export async function getIconFromPngUrl(thumbnailUrl) {
         throw error;
     }
 }
-
+//------------------------------------------------------------------------------
 // Uint8Array の配列を1つの Uint8Array に結合する関数
 function concatenateUint8Arrays(arrays) {
     // 合計サイズを計算
     const totalLength = arrays.reduce((acc, array) => acc + array.length, 0);
-    console.log("hoge")
     // 新しい配列を作成
     const result = new Uint8Array(totalLength);
-
     // データをコピー
     let offset = 0;
     for (const array of arrays) {
         result.set(array, offset);
         offset += array.length;
     }
-
     return result;
 }
 
@@ -153,7 +150,7 @@ async function getItemBlob(downloadUrl) {
         );
     });
 }
-
+//------------------------------------------------------------------------------
 async function createZipArchive(fileMap) {
     const zip = new JSZip();
     // ループ処理
