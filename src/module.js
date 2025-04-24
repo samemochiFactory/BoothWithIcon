@@ -115,10 +115,8 @@ async function getItemBlob(downloadUrl) {
                     // チャンクをすべて結合
                     const completeData = concatenateUint8Arrays(receivedChunks);
                     const blob = new Blob([completeData], { type: blobType });
-
                     // リスナーをクリーンアップ
                     chrome.runtime.onMessage.removeListener(chunkListener);
-
                     resolve(blob);
                 }
             }

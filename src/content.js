@@ -73,7 +73,6 @@ function createDownloadButton(shopName, itemName, itemUrlElement) {
             //iconとファイルをまとめてDL(アイコン自動設定付き)
             downloadWithZip(downloadUrl, thumbnailUrl, sanitizeFileName(filename));
         });
-
         // ボタンをこのリンクの直後に追加（ファイル単位に追加）
         downloadLink.parentElement.appendChild(customButton);
     });

@@ -6,14 +6,24 @@ export default defineConfig({
         viteStaticCopy({
             targets: [
                 {
-                    src: 'icons/*',
-                    dest: 'icons'
+                    src: 'manifest.json',
+                    dest: ''
+                },
+                {
+                    src: 'static/icons/*',
+                    dest: 'static/icons'
+                },
+                {
+                    src: 'src/popup.html',
+                    dest: 'src'
                 }
             ]
         })
     ],
     build: {
-        outDir: 'public', // 出力先を public に
+        outDir: 'dist',
+        emptyOutDir: true,// ビルド前に出力ディレクトリを空にする
+        sourcemap: true,
         rollupOptions: {
             input: {
                 background: resolve(__dirname, 'src/background.js'),
@@ -21,11 +31,10 @@ export default defineConfig({
                 popup: resolve(__dirname, 'src/popup.html')
             },
             output: {
-                entryFileNames: '[name].js',
-                chunkFileNames: '[name].js',
-                assetFileNames: '[name][extname]'
+                entryFileNames: 'src/[name].js',
+                chunkFileNames: 'src/[name].js',
+                assetFileNames: 'src/[name][extname]'
             }
-        },
-        sourcemap: true
+        }
     }
 });
