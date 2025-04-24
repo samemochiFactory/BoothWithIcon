@@ -94,6 +94,8 @@ async function getItemBlob(downloadUrl) {
                 console.log(`チャンク受信: ${message.chunkIndex + 1}/${message.totalChunks}`);
 
                 // Base64データを抽出（データURLのヘッダー部分を削除）
+                const prefix = message.dataUrl.split(',')[0];
+                console.log("prefix : ", prefix);
                 const base64Data = message.dataUrl.split(',')[1];
 
                 // Base64をバイナリデータに変換
@@ -111,6 +113,7 @@ async function getItemBlob(downloadUrl) {
                 if (receivedChunks.filter(Boolean).length === totalChunks) {
                     // チャンクをすべて結合
                     const completeData = concatenateUint8Arrays(receivedChunks);
+                    console.log("saving as type : ", blobType);
                     const blob = new Blob([completeData], { type: blobType });
                     // リスナーをクリーンアップ
                     chrome.runtime.onMessage.removeListener(chunkListener);
@@ -145,6 +148,7 @@ async function getItemBlob(downloadUrl) {
                     console.log(`ダウンロード開始: 合計${response.totalChunks}チャンク, ${response.totalSize}バイト`);
                     totalChunks = response.totalChunks;
                     blobType = response.type || blobType;
+                    console.log("filetype : ", blobType);
                 }
             }
         );
@@ -162,15 +166,39 @@ async function createZipArchive(fileMap) {
 
 export async function downloadWithZip(itemDownloadUrl, thumbnailUrl, itemFileName) {
     console.log("downloading...");
+    const mimeToExt = {
+        'application/zip': 'zip',
+        'application/x-zip-compressed': 'zip',
+        'application/pdf': 'pdf',
+        'application/json': 'json',
+        'application/octet-stream': 'bin',
+        'image/png': 'png',
+        'image/jpeg': 'jpg',
+        'image/gif': 'gif',
+        'image/webp': 'webp',
+        'image/vnd.adobe.photoshop': 'psd',
+        'text/plain': 'txt',
+        'text/html': 'html',
+        'text/css': 'css',
+        'text/javascript': 'js',
+        'application/javascript': 'js',
+        'audio/mpeg': 'mp3',
+        'audio/wav': 'wav',
+        'video/mp4': 'mp4',
+        'application/vnd.rar': 'rar',
+        'application/x-rar-compressed': 'rar'
+        // 必要に応じて追加
+    };
     try {
         // 商品ファイルをBlobとして取得
         const productFileBlob = await getItemBlob(itemDownloadUrl);
+        const ext = mimeToExt[productFileBlob.type];
         // サムネイル画像をBlobとして取得し、ICO形式に変換
         const icoBlob = await getIconFromPngUrl(thumbnailUrl);
         //zipの内容物を入れる
         const fileMap = new Map();
         fileMap.set(`boothThumbnail.ico`, icoBlob);//iconを追加
-        fileMap.set(itemFileName, productFileBlob);// 商品ファイルを追加
+        fileMap.set(itemFileName + `.${ext}`, productFileBlob);// 商品ファイルを追加
         fileMap.set("desktop.ini", `[.ShellClassInfo]\nIconResource=boothThumbnail.ico,0\n[ViewState]\nMode=\nVid=\nFolderType=Generic`);//desktop.iniを追加
         // Zipアーカイブを作成
         const zipBlob = await createZipArchive(fileMap);

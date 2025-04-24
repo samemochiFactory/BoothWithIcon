@@ -56,7 +56,8 @@ function createDownloadButton(shopName, itemName, itemUrlElement) {
         const title = titleElement.textContent.trim().replace(/\s+/g, ' ');
         const author = authorElement.textContent.trim().replace(/\s+/g, ' ');
         // ファイル名を生成
-        const filename = `${author}_${title}.zip`;
+        // const filename = `${author}_${title}.zip`;
+        const filename = `${author}_${title}`;
 
         //--------ボタン挿入--------
         const insertPointElements = productContainer.querySelector('.mt-16').children;
@@ -74,7 +75,7 @@ function createDownloadButton(shopName, itemName, itemUrlElement) {
             customButtonElement.classList.add("text-wrap");
             // customButton.classList.remove("text-nowrap");
             // customButtonElement.textContent = `カスタムDL (${filename})`;
-            customButtonElement.textContent = `カスタムDL`;
+            customButtonElement.textContent = `ダウンロード(サムネ付)`;
             customButtonElement.className = 'btn btn-outline-primary custom-dl-button px-4 py-2 bg-blue-500 rounded text-sm';
 
             customButtonElement.addEventListener('click', () => {

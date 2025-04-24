@@ -45,6 +45,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
         fetch(message.url)
             .then(response => response.blob())
             .then(async blob => {
+                console.log("send blobtype : ", blob.type);
                 const totalChunks = Math.ceil(blob.size / CHUNK_SIZE);
 
                 // 最初のレスポンスでメタデータを送信
