@@ -1,4 +1,5 @@
 import { PngIcoConverter } from './png2icojs';
+// JSZipライブラリをインポート（manifest.jsonにJSZipを追加）
 import JSZip from 'jszip';
 import { fileTypeFromBlob } from 'file-type';
 //------------------------------------------------------------------------------
@@ -82,7 +83,7 @@ function concatenateUint8Arrays(arrays) {
     return result;
 }
 
-async function getItemBlob(downloadUrl) {
+async function fetchItemBlob(downloadUrl) {
     return new Promise((resolve, reject) => {
         // 受信したチャンクを保存する配列
         const receivedChunks = [];
@@ -165,11 +166,11 @@ async function createZipArchive(fileMap) {
     return zip.generateAsync({ type: "blob" });
 }
 
-export async function downloadWithZip(itemDownloadUrl, thumbnailUrl, itemFileName) {
+export async function downloadWithZip(customFileName, itemDownloadUrl, thumbnailUrl, assetName) {
     console.log("downloading...");
     try {
         // 商品ファイルをBlobとして取得
-        const productFileBlob = await getItemBlob(itemDownloadUrl);
+        const productFileBlob = await fetchItemBlob(itemDownloadUrl);
         const filetype = await fileTypeFromBlob(productFileBlob);//=> {ext: 'txt', mime: 'text/plain'}
         console.log("filetype from fileTypeFromBlob : ", filetype);
         const ext = filetype['ext'];
@@ -178,7 +179,8 @@ export async function downloadWithZip(itemDownloadUrl, thumbnailUrl, itemFileNam
         //zipの内容物を入れる
         const fileMap = new Map();
         fileMap.set(`boothThumbnail.ico`, icoBlob);//iconを追加
-        fileMap.set(itemFileName + `.${ext}`, productFileBlob);// 商品ファイルを追加
+        // fileMap.set(assetName + `.${ext}`, productFileBlob);// 商品ファイルを追加
+        fileMap.set(assetName, productFileBlob);// 商品ファイルを追加 WARN:assetNameはDOMから取った文字列なので，拡張子を含む．ただ，minetypeと合っているか確認できたほうがいい．
         fileMap.set("desktop.ini", `[.ShellClassInfo]\nIconResource=boothThumbnail.ico,0\n[ViewState]\nMode=\nVid=\nFolderType=Generic`);//desktop.iniを追加
         // Zipアーカイブを作成
         const zipBlob = await createZipArchive(fileMap);
@@ -187,7 +189,7 @@ export async function downloadWithZip(itemDownloadUrl, thumbnailUrl, itemFileNam
         chrome.runtime.sendMessage({
             action: 'downloadZip',
             blobUrl: URL.createObjectURL(zipBlob),
-            filename: itemFileName + '.zip'
+            filename: customFileName + '.zip'
         });
     } catch (error) {
         console.error('Zipアーカイブの作成またはダウンロード中にエラーが発生しました:', error);
