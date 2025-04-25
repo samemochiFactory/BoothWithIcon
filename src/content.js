@@ -1,4 +1,3 @@
-// import { forEach } from 'jszip';
 import { downloadWithZip } from './module';
 
 // function getItemUrl(itemUrlElement) {
@@ -31,76 +30,6 @@ function sanitizeFileName(name) {
     return name.replace(/[\\/:*?"<>|]/g, '_');
 }
 
-
-// function createDownloadButton(shopName, itemName, itemUrlElement) {
-//     //↓↓↓↓↓↓↓これ，そもそもitemCard単位でselectorAllして，そのitemCardElementの下でmt-16.childrenの中のdownloadLinkを得ないといけないのでは？
-//     document.querySelectorAll('a[href*="/downloadables/"]').forEach(downloadLinkElement => {
-//         const downloadUrl = downloadLinkElement ? downloadLinkElement.href : null;
-
-//         //商品カードを取得
-//         const productContainer = downloadLinkElement.closest('.mb-16.bg-white');
-//         if (!productContainer) return;
-
-//         //サムネイルのURLを取得
-//         const thumbnailElement = productContainer.querySelector('.l-library-item-thumbnail');//ここ，今の実装だと先頭要素だけを取っているので変更の必要あり
-//         if (!thumbnailElement) {
-//             throw new Error('サムネイル画像が見つかりません');
-//         }
-//         const thumbnailUrl = thumbnailElement.src;
-
-//         // 商品タイトルと作者名の抽出
-//         const titleElement = productContainer.querySelector('.text-text-default');
-//         const authorElement = productContainer.querySelector('.text-text-gray600');
-
-//         if (!titleElement || !authorElement) return;
-//         // ここ，サイトから商品名作ってるので404でも見た目はちゃんと見えてしまうが，DL時にエラーとなる
-//         const title = titleElement.textContent.trim().replace(/\s+/g, ' ');
-//         const author = authorElement.textContent.trim().replace(/\s+/g, ' ');
-//         // ファイル名を生成
-//         // const filename = `${author}_${title}.zip`;
-//         const filename = `${author}_${title}`;
-
-//         //--------ボタン挿入--------
-//         const insertPointElements = productContainer.querySelector('.mt-16').children;
-//         console.log(insertPointElements);
-//         // ボタンをこのリンクの直後に追加（ファイル単位に追加）
-//         for (const insertPointElement of insertPointElements) {//ファイルが複数ある場合に対応
-//             // 既にカスタムボタンが追加されていればスキップ
-//             if (insertPointElement.querySelector('.custom-dl-button')) continue;
-
-//             //ボタン追加
-//             const customButtonWrapper = document.createElement("div");
-//             customButtonWrapper.className = "custom-dl-button-wrapper";
-
-//             const customButtonElement = document.createElement('button');
-//             customButtonElement.classList.add("text-wrap");
-//             // customButton.classList.remove("text-nowrap");
-//             // customButtonElement.textContent = `カスタムDL (${filename})`;
-//             customButtonElement.textContent = `ダウンロード(サムネ付)`;
-//             customButtonElement.className = 'btn btn-outline-primary custom-dl-button px-4 py-2 bg-blue-500 rounded text-sm';
-
-//             customButtonElement.addEventListener('click', () => {
-//                 console.log("click!");
-//                 console.log('ファイル名:', filename);
-
-//                 if (!downloadUrl) {
-//                     console.error('ダウンロードURLが取得できていません');
-//                     return;
-//                 }
-//                 //iconとファイルをまとめてDL(アイコン自動設定付き)
-//                 downloadWithZip(downloadUrl, thumbnailUrl, sanitizeFileName(filename));
-//             });
-
-//             customButtonWrapper.appendChild(customButtonElement);//add btn
-//             //progressBar
-//             const progressBarElement = createProgressBar();
-//             customButtonWrapper.appendChild(progressBarElement);//add progressBar
-
-//             insertPointElement.appendChild(customButtonWrapper);
-//         }
-//     });
-// }
-
 function createDownloadButton() {
     //--------ボタン作成--------
     const customButtonElement = document.createElement('button');
@@ -124,12 +53,24 @@ function createProgressBar() {
     //progressBar
     const progressBar = document.createElement("div");
     progressBar.className = "progress-bar";
-    progressBar.style.width = "70%";  // 進捗
+    progressBar.ariaValueMax = "100";
+    progressBar.ariaValueMin = "0";
+    progressBar.style.width = "0%";  // 進捗
     progressBar.style.backgroundColor = "#fc4d50"//booth theme color
     progressBar.style.borderRadius = "10px"; // 中身の角丸
-    progressBar.textContent = "70%";
+    progressBar.textContent = "";
+    progressBar.ariaValueNow = '50';
 
     progressWrapperElement.appendChild(progressBar);
+
+    const progressListener = (message) => {
+        if (message.action === "receiveChunk") {
+            const progress = Math.round(100 * ((message.chunkIndex + 1) / message.totalChunks));
+            progressBar.textContent = `${progress}%`;
+            progressBar.style.width = `${progress}%`;
+        }
+    }
+    chrome.runtime.onMessage.addListener(progressListener);
 
     return progressWrapperElement
 }
@@ -216,8 +157,6 @@ async function main() {
             // }
         }
     }
-
-    //-----------------------------------
 
     // const selector = "a.no-underline[href*='/items/']";//商品リンクを含む要素(aタグ)のセレクタ
     // const itemUrlElements = document.querySelectorAll(selector);//全件取得

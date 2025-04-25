@@ -3,7 +3,7 @@ import { PngIcoConverter } from './png2icojs';
 import JSZip from 'jszip';
 import { fileTypeFromBlob } from 'file-type';
 //------------------------------------------------------------------------------
-async function getThumbnail(thumbnailUrl) {
+async function fetchThumbnail(thumbnailUrl) {
     return new Promise((resolve, reject) => {
         chrome.runtime.sendMessage(
             {
@@ -24,11 +24,8 @@ async function getThumbnail(thumbnailUrl) {
     });
 }
 
-export async function getIconFromPngUrl(thumbnailUrl) {
+export async function convertPngToIcon(thumbnailBlob) {
     try {
-        // サムネイル画像をBlobとして取得
-        const imageData = await getThumbnail(thumbnailUrl);
-
         // PNG画像をCanvasに描画
         const canvas = document.createElement('canvas');
         const ctx = canvas.getContext('2d');
@@ -46,7 +43,7 @@ export async function getIconFromPngUrl(thumbnailUrl) {
                 resolve();
             };
             img.onerror = (e) => reject(new Error(`画像の読み込みに失敗: ${e}`));
-            img.src = URL.createObjectURL(imageData);
+            img.src = URL.createObjectURL(thumbnailBlob);
         });
 
         // CanvasからPNG Blobを生成
@@ -175,7 +172,8 @@ export async function downloadWithZip(customFileName, itemDownloadUrl, thumbnail
         console.log("filetype from fileTypeFromBlob : ", filetype);
         const ext = filetype['ext'];
         // サムネイル画像をBlobとして取得し、ICO形式に変換
-        const icoBlob = await getIconFromPngUrl(thumbnailUrl);
+        const thumbnailBlob = await fetchThumbnail(thumbnailUrl);// サムネイル画像をBlobとして取得
+        const icoBlob = await convertPngToIcon(thumbnailBlob);//.icoへ変換
         //zipの内容物を入れる
         const fileMap = new Map();
         fileMap.set(`boothThumbnail.ico`, icoBlob);//iconを追加
