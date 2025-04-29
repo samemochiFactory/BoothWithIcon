@@ -1,12 +1,12 @@
 
-chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
-    if (message.action === 'download') {
+chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
+    if (msg.action === 'download') {
         //商品をDLするときに使われる
-        console.log("filename:", message.filename);
-        console.log("url:", message.url);
+        console.log("filename:", msg.filename);
+        console.log("url:", msg.url);
         chrome.downloads.download({
-            url: message.url,
-            filename: message.filename,
+            url: msg.url,
+            filename: msg.filename,
             saveAs: true
         }, (downloadId) => {
             if (chrome.runtime.lastError) {
@@ -16,11 +16,11 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
             }
         });
     }
-    if (message.action === "fetchItemInfo") {
+    if (msg.action === "fetchItemInfo") {
         //商品ページ.jsonを取得するときに使われる
         console.log("fetchItemInfo");
-        console.log(message.url);
-        fetch(message.url)
+        console.log(msg.url);
+        fetch(msg.url)
             .then(response => {
                 if (!response.ok) {
                     throw new Error(`レスポンスステータス: ${response.status}`);
@@ -32,19 +32,19 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
             })
             .catch(error => {
                 console.error("フェッチエラー:", error);
-                console.error("error url:", message.url)
-                sendResponse({ error: error.message });
+                console.error("error url:", msg.url)
+                sendResponse({ error: error.msg });
             });
 
         return true; // 非同期応答のためにtrueを返す
     }
     //チャンク送信
-    if (message.action === "fetchItem") {
+    if (msg.action === "fetchItem") {
         const CHUNK_SIZE = 10 * 1024 * 1024; // 1MB チャンクサイズ
 
-        fetch(message.url)
+        fetch(msg.url)
             .then(response => response.blob())
-            .then(async blob => {
+            .then(async blob => {//クソデカblob
                 console.log("send blobtype : ", blob.type);
                 const totalChunks = Math.ceil(blob.size / CHUNK_SIZE);
 
@@ -55,6 +55,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
                     totalSize: blob.size,
                     type: blob.type
                 });
+                console.log("sending progress to id : ", msg.progressBarId);
                 // チャンクごとに処理
                 for (let chunkIndex = 0; chunkIndex < totalChunks; chunkIndex++) {
                     const start = chunkIndex * CHUNK_SIZE;
@@ -73,6 +74,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
                                 chunkIndex: chunkIndex,
                                 totalChunks: totalChunks,
                                 dataUrl: reader.result,
+                                progressBarId: msg.progressBarId
                             });
                             resolve();
                         };
@@ -84,7 +86,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
                 console.error("チャンク送信エラー:", error);
                 chrome.tabs.sendMessage(sender.tab.id, {
                     action: "downloadError",
-                    downloadId: message.downloadId,
+                    downloadId: msg.downloadId,
                     error: error.toString()
                 });
             });
@@ -92,11 +94,11 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
         // 非同期処理を行うため、sendResponseを後で呼び出すことを示す
         return true;
     }
-    if (message.action === "fetchThumbnail") {
+    if (msg.action === "fetchThumbnail") {
         //サムネイル画像を取得するときに使われる
         console.log("fetchThumbnail");
-        console.log(message.url);
-        fetch(message.url)
+        console.log(msg.url);
+        fetch(msg.url)
             .then(response => {
                 if (!response.ok) {
                     throw new Error(`レスポンスステータス: ${response.status}`);
@@ -108,14 +110,14 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
             })
             .catch(error => {
                 console.error("フェッチエラー:", error);
-                sendResponse({ error: error.message, data: null });
+                sendResponse({ error: error.msg, data: null });
             });
         return true; // 非同期応答のためにtrueを返す
     }
-    if (message.action === 'downloadZip') {
+    if (msg.action === 'downloadZip') {
         chrome.downloads.download({
-            url: message.blobUrl,
-            filename: message.filename,
+            url: msg.blobUrl,
+            filename: msg.filename,
             saveAs: true
         }, downloadId => {
             if (chrome.runtime.lastError) {

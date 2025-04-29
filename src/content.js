@@ -1,4 +1,4 @@
-import { downloadWithZip } from './module';
+import { downloadWithZip } from './module_v2';
 
 // function getItemUrl(itemUrlElement) {
 //     const itemUrl = itemUrlElement ? itemUrlElement.href : 'Unknown';
@@ -49,6 +49,9 @@ function createProgressBar() {
     progressWrapperElement.className = "progress";
     progressWrapperElement.style.height = "20px"; // 高さ調整（任意）
     progressWrapperElement.style.borderRadius = "10px"; // 外枠の角丸
+    //add id to Wrapper
+    progressWrapperElement.id = crypto.randomUUID();
+    console.log("progressBarId : ", progressWrapperElement.id);
 
     //progressBar
     const progressBar = document.createElement("div");
@@ -64,7 +67,7 @@ function createProgressBar() {
     progressWrapperElement.appendChild(progressBar);
 
     const progressListener = (message) => {
-        if (message.action === "receiveChunk") {
+        if ((message.action === "receiveChunk") && (message.progressBarId === progressWrapperElement.id)) {
             const progress = Math.round(100 * ((message.chunkIndex + 1) / message.totalChunks));
             progressBar.textContent = `${progress}%`;
             progressBar.style.width = `${progress}%`;
@@ -122,6 +125,7 @@ async function main() {
             const customWrapper = document.createElement('div');
             const customDownloadButton = createDownloadButton();//要変更
             const progressBar = createProgressBar();
+            console.log("progressBarId in main : ", progressBar.id);
 
             //set function to customDownloadButton
             customDownloadButton.addEventListener('click', () => {
@@ -133,13 +137,27 @@ async function main() {
                     return;
                 }
                 //iconとファイルをまとめてDL(アイコン自動設定付き)
-                downloadWithZip(customFileName, downloadUrl, thumbnailUrl, assetName);
+                downloadWithZip(customFileName, downloadUrl, thumbnailUrl, assetName, progressBar.id);
             });
+
+            //WIP
+            //----------------------------------------------------------------
+            //ここでクラスをインスタンス化する．
+            // const task = new DownloadTask({//ダウンロードとprogressBarを管理するclass
+            //     downloadUrl, thumbnailUrl, assetName,
+            //     filename: customFileName,
+            // });
+            // customDownloadButton.addEventListener('click', () => {
+            //     task.start();
+            // });
+            //----------------------------------------------------------------
 
             //insert to assetContainer
             customWrapper.appendChild(customDownloadButton);
             customWrapper.appendChild(progressBar);
             assetContainerElement.appendChild(customWrapper);
+
+
 
             //↓↓↓.jsonからshopNameとitemName取ってくるやつ(注:この方法で取ったitemNameはバリエーション商品の区別が出来ない(桔梗用,マヌカ用,等))
             // try {
