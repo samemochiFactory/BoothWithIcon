@@ -37,7 +37,7 @@ function createDownloadButton() {
 
     customButtonElement.textContent = `ダウンロード(サムネ付)`;
     // customButtonElement.className = 'btn btn-outline-primary custom-dl-button px-4 py-2 bg-blue-500 rounded text-sm';
-    customButtonElement.className = 'btn btn-outline-primary';
+    customButtonElement.className = 'btn btn-outline-primary btn-sm';
 
     return customButtonElement;
 }
@@ -46,12 +46,12 @@ function createDownloadButton() {
 function createProgressBar() {
     //Wrapper
     const progressWrapperElement = document.createElement("div");
+    progressWrapperElement.style.visibility = 'hidden';//非表示
     progressWrapperElement.className = "progress";
     progressWrapperElement.style.height = "20px"; // 高さ調整（任意）
     progressWrapperElement.style.borderRadius = "10px"; // 外枠の角丸
     //add id to Wrapper
     progressWrapperElement.id = crypto.randomUUID();
-    console.log("progressBarId : ", progressWrapperElement.id);
 
     //progressBar
     const progressBar = document.createElement("div");
@@ -62,7 +62,7 @@ function createProgressBar() {
     progressBar.style.backgroundColor = "#fc4d50"//booth theme color
     progressBar.style.borderRadius = "10px"; // 中身の角丸
     progressBar.textContent = "";
-    progressBar.ariaValueNow = '50';
+    // progressBar.ariaValueNow = '50';
 
     progressWrapperElement.appendChild(progressBar);
 
@@ -90,14 +90,14 @@ async function main() {
     //get item container (e.g. contains thumbnail,assets)
     const productItemElements = document.querySelectorAll('.mb-16');
     for (productItemElement of productItemElements) {
-        console.log(productItemElement);
+        // console.log(productItemElement);
 
         let shopName = "unknownShopName";//default
         let productItemName = "unknownItemName";//default
 
         //get thumbnailUrl
         const thumbnailUrl = productItemElement.querySelector('.l-library-item-thumbnail').src;
-        console.log(thumbnailUrl);
+        // console.log(thumbnailUrl);
 
         //get author
         const shopNameElement = productItemElement.querySelector('.text-text-gray600');
@@ -110,13 +110,12 @@ async function main() {
         //get assets containers (e.g. contains hoge.zip,downloadlink)
         const assetContainerElements = productItemElement.querySelector('.mt-16').children;
         for (assetContainerElement of assetContainerElements) {//assetContainerは一つだけダウンロードボタンを持つ
-            console.log(assetContainerElement);
             //get assetName
             const assetName = assetContainerElement.querySelector('.typography-14').textContent;
 
             //get downloadUrl
             const downloadUrl = assetContainerElement.querySelector('a').href;
-            console.log(downloadUrl);
+            // console.log(downloadUrl);
 
             //make fileName(後でフォーマット選べるようにする)
             const customFileName = sanitizeFileName(`${shopName}_${productItemName}`);
@@ -124,11 +123,14 @@ async function main() {
             //make customDownloadButton and progressBar;
             const customWrapper = document.createElement('div');
             const customDownloadButton = createDownloadButton();//要変更
-            const progressBar = createProgressBar();
-            console.log("progressBarId in main : ", progressBar.id);
+            const progressBarWrapper = createProgressBar();
 
             //set function to customDownloadButton
-            customDownloadButton.addEventListener('click', () => {
+            customDownloadButton.addEventListener('click', async () => {
+                //
+                customDownloadButton.textContent = "Loading...";
+                progressBarWrapper.style.visibility = 'visible';//progressBarを表示
+                customDownloadButton.disabled = true;//ボタンをクリック出来なくする
                 console.log("click!");
                 console.log('ファイル名:', customFileName);
 
@@ -137,7 +139,21 @@ async function main() {
                     return;
                 }
                 //iconとファイルをまとめてDL(アイコン自動設定付き)
-                downloadWithZip(customFileName, downloadUrl, thumbnailUrl, assetName, progressBar.id);
+                try {
+                    await downloadWithZip(customFileName, downloadUrl, thumbnailUrl, assetName, progressBarWrapper.id);
+                    customDownloadButton.textContent = `ダウンロード(サムネ付)`;
+                } catch (error) {
+                    console.error('Zipアーカイブの作成またはダウンロード中にエラーが発生しました:', error);
+                    customDownloadButton.textContent = "ERROR!";
+                } finally {
+                    customDownloadButton.disabled = false;//ボタンをクリック出来るようにする
+                    //progressBarのリセット
+                    const progressBar = progressBarWrapper.querySelector(".progress-bar");
+                    progressBar.style.width = "0%";
+                    progressBar.textContent = "";
+                    progressBarWrapper.style.visibility = 'hidden';//非表示
+                }
+
             });
 
             //WIP
@@ -154,7 +170,7 @@ async function main() {
 
             //insert to assetContainer
             customWrapper.appendChild(customDownloadButton);
-            customWrapper.appendChild(progressBar);
+            customWrapper.appendChild(progressBarWrapper);
             assetContainerElement.appendChild(customWrapper);
 
 
@@ -175,32 +191,5 @@ async function main() {
             // }
         }
     }
-
-    // const selector = "a.no-underline[href*='/items/']";//商品リンクを含む要素(aタグ)のセレクタ
-    // const itemUrlElements = document.querySelectorAll(selector);//全件取得
-
-    // document.head.appendChild(link);//add bootstrap
-    // for (const [i, itemUrlElement] of itemUrlElements.entries()) {
-    //     //商品ページのURL+.jsonから商品情報を取得
-    //     console.log('ItemURL' + i, itemUrlElement.href);
-    //     // const itemUrl = getItemUrl(itemUrlElement) ? getItemUrl(itemUrlElement) : null;
-    //     const itemUrl = getItemUrl(itemUrlElement);
-    //     if (!itemUrl) continue;
-    //     let shopName = "unknownShopName";//default
-    //     let itemName = "unknownItemName";//default
-    //     try {
-    //         const data = await fetchItemInfo(itemUrl + '.json');
-    //         shopName = data.shop.name;
-    //         itemName = data.name;
-    //     } catch (error) {
-    //         console.warn(`(${i}) 商品情報の取得に失敗: ${itemUrl}.json`, error);
-    //         console.warn('商品情報が取得できなかったのでデフォルト名を使用します', error);
-    //     } finally {
-    //         console.log('ショップ名:', shopName);
-    //         console.log('商品名:', itemName);
-    //         // //DLボタン追加
-    //         createDownloadButton(shopName, itemName, itemUrlElement)
-    //     }
-    // }
 }
 main();

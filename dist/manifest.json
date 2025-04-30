@@ -16,7 +16,7 @@
     },
     "action": {
         "default_popup": "src/popup.html",
-        "default_title": "Click me!"
+        "default_title": "Booth With Icon(beta)"
     },
     "icons": {
         "16": "static/icons/icon.png",

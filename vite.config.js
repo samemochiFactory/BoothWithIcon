@@ -10,7 +10,8 @@ export default defineConfig({
                     dest: ''
                 },
                 {
-                    src: 'static/icons/*',
+                    // src: 'static/icons/*',
+                    src: 'static/icons/icon.png',
                     dest: 'static/icons'
                 },
                 {
@@ -23,7 +24,7 @@ export default defineConfig({
     build: {
         outDir: 'dist',
         emptyOutDir: true,// ビルド前に出力ディレクトリを空にする
-        sourcemap: true,
+        sourcemap: false,
         rollupOptions: {
             input: {
                 background: resolve(__dirname, 'src/background.js'),

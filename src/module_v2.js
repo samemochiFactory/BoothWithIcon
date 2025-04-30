@@ -15,39 +15,38 @@ import { fileTypeFromBlob } from 'file-type';
 // }
 
 export async function downloadWithZip(customFileName, itemDownloadUrl, thumbnailUrl, assetName, progressBarId) {
-    try {
-        console.log("progressBarId in downloadWithZip : ", progressBarId);
-        // 商品ファイルをBlobとして取得
-        const productFileBlob = await fetchItemBlob(itemDownloadUrl, progressBarId);
-        const filetype = await fileTypeFromBlob(productFileBlob);//=> {ext: 'txt', mime: 'text/plain'}
-        console.log("filetype from fileTypeFromBlob : ", filetype);
-        const ext = filetype['ext'];
+    // try {
+    // 商品ファイルをBlobとして取得
+    const productFileBlob = await fetchItemBlob(itemDownloadUrl, progressBarId);
+    const filetype = await fileTypeFromBlob(productFileBlob);//=> {ext: 'txt', mime: 'text/plain'}
+    // console.log("filetype from fileTypeFromBlob : ", filetype);
+    const ext = filetype['ext'];
 
-        // サムネイル画像をBlobとして取得し、ICO形式に変換
-        const thumbnailBlob = await fetchThumbnail(thumbnailUrl);// サムネイル画像をBlobとして取得
-        const icoBlob = await convertPngToIcon(thumbnailBlob);//.icoへ変換
+    // サムネイル画像をBlobとして取得し、ICO形式に変換
+    const thumbnailBlob = await fetchThumbnail(thumbnailUrl);// サムネイル画像をBlobとして取得
+    const icoBlob = await convertPngToIcon(thumbnailBlob);//.icoへ変換
 
-        //zipの内容物を入れる
-        const fileMap = new Map();
-        fileMap.set(`boothThumbnail.ico`, icoBlob);//iconを追加
+    //zipの内容物を入れる
+    const fileMap = new Map();
+    fileMap.set(`boothThumbnail.ico`, icoBlob);//iconを追加
 
-        // fileMap.set(assetName + `.${ext}`, productFileBlob);// 商品ファイルを追加
-        fileMap.set(assetName, productFileBlob);// 商品ファイルを追加 WARN:assetNameはDOMから取った文字列なので，拡張子を含む．ただ，minetypeと合っているか確認できたほうがいい．
-        fileMap.set("desktop.ini", `[.ShellClassInfo]\nIconResource=boothThumbnail.ico,0\n[ViewState]\nMode=\nVid=\nFolderType=Generic`);//desktop.iniを追加
-        fileMap.set("setIcon.bat", `@echo off\nsetlocal\nset "folder=%~dp0"\nset "folder=%folder:~0,-1%"\necho target folder: %folder%\nattrib +s +r "%folder%"\nattrib +h +s "%folder%\desktop.ini"`);
+    // fileMap.set(assetName + `.${ext}`, productFileBlob);// 商品ファイルを追加
+    fileMap.set(assetName, productFileBlob);// 商品ファイルを追加 WARN:assetNameはDOMから取った文字列なので，拡張子を含む．ただ，minetypeと合っているか確認できたほうがいい．
+    fileMap.set("desktop.ini", `[.ShellClassInfo]\nIconResource=boothThumbnail.ico,0\n[ViewState]\nMode=\nVid=\nFolderType=Generic`);//desktop.iniを追加
+    fileMap.set("setIcon.bat", `@echo off\nsetlocal\nset "folder=%~dp0"\nset "folder=%folder:~0,-1%"\necho target folder: %folder%\nattrib +s +r "%folder%"\nattrib +h +s "%folder%\desktop.ini"`);
 
-        // Zipアーカイブを作成
-        const zipBlob = await createZipArchive(fileMap);
+    // Zipアーカイブを作成
+    const zipBlob = await createZipArchive(fileMap);
 
-        // ダウンロード処理
-        chrome.runtime.sendMessage({
-            action: 'downloadZip',
-            blobUrl: URL.createObjectURL(zipBlob),
-            filename: customFileName + '.zip'
-        });
-    } catch (error) {
-        console.error('Zipアーカイブの作成またはダウンロード中にエラーが発生しました:', error);
-    }
+    // ダウンロード処理
+    chrome.runtime.sendMessage({
+        action: 'downloadZip',
+        blobUrl: URL.createObjectURL(zipBlob),
+        filename: customFileName + '.zip'
+    });
+    // } catch (error) {
+    //     console.error('Zipアーカイブの作成またはダウンロード中にエラーが発生しました:', error);
+    // }
 }
 
 async function fetchThumbnail(thumbnailUrl) {
