@@ -33,8 +33,8 @@
             ]
         }
     ],
-    "content-security_policy": {
-        "extension_pages": "script-src 'self'; object-src 'self'; style-src 'self' https://cdn.jsdelivr.net; "
+    "content_security_policy": {
+        "extension_pages": "script-src 'self'; object-src 'self'; style-src 'self' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com 'unsafe-inline';"
     },
     "web_accessible_resources": [
         {
