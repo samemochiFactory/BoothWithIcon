@@ -1,8 +1,8 @@
 {
     "manifest_version": 3,
-    "name": "BoothAssetsManager",
-    "version": "0.1.0",
-    "description": "Boothの商品を保存するときにショップ情報やリンクを含めて管理しやすくします．",
+    "name": "Booth With Icon",
+    "version": "1.0.0",
+    "description": "Boothのダウンロード商品を保存するときにアイコンを含めてフォルダを管理しやすくします．",
     "permissions": [
         "storage",
         "downloads"
