@@ -8,7 +8,10 @@
         "downloads"
     ],
     "host_permissions": [
-        "<all_urls>"
+        "https://accounts.booth.pm/library",
+        "https://booth.pm/downloadables/*",
+        "https://s2.booth.pm/*",
+        "https://booth.pximg.net/*"
     ],
     "background": {
         "service_worker": "src/background.js",
