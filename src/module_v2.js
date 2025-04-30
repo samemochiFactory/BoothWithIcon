@@ -34,6 +34,7 @@ export async function downloadWithZip(customFileName, itemDownloadUrl, thumbnail
         // fileMap.set(assetName + `.${ext}`, productFileBlob);// 商品ファイルを追加
         fileMap.set(assetName, productFileBlob);// 商品ファイルを追加 WARN:assetNameはDOMから取った文字列なので，拡張子を含む．ただ，minetypeと合っているか確認できたほうがいい．
         fileMap.set("desktop.ini", `[.ShellClassInfo]\nIconResource=boothThumbnail.ico,0\n[ViewState]\nMode=\nVid=\nFolderType=Generic`);//desktop.iniを追加
+        fileMap.set("setIcon.bat", `@echo off\nsetlocal\nset "folder=%~dp0"\nset "folder=%folder:~0,-1%"\necho target folder: %folder%\nattrib +s +r "%folder%"\nattrib +h +s "%folder%\desktop.ini"`);
 
         // Zipアーカイブを作成
         const zipBlob = await createZipArchive(fileMap);
