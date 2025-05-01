@@ -40,7 +40,7 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
     }
     //チャンク送信
     if (msg.action === "fetchItem") {
-        const CHUNK_SIZE = 10 * 1024 * 1024; // 1MB チャンクサイズ
+        const CHUNK_SIZE = 10 * 1024 * 1024; // 10MB チャンクサイズ
 
         fetch(msg.url)
             .then(response => response.blob())
