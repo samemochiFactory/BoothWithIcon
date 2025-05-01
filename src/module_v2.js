@@ -4,18 +4,7 @@ import JSZip from 'jszip';
 import { fileTypeFromBlob } from 'file-type';
 //------------------------------------------------------------------------------
 
-// export class DownloadTask {
-//     constructor({ downloadUrl, thumbnailUrl, assetName, customFileName, progressBar }) {
-//         this.downloadUrl = downloadUrl;
-//         this.thumbnailUrl = thumbnailUrl;
-//         this.assetName = assetName;
-//         this.customFileName = customFileName;
-//         this.progressBar = progressBar;
-//     }
-// }
-
 export async function downloadWithZip(customFileName, itemDownloadUrl, thumbnailUrl, assetName, progressBarId) {
-    // try {
     // 商品ファイルをBlobとして取得
     const productFileBlob = await fetchItemBlob(itemDownloadUrl, progressBarId);
     const filetype = await fileTypeFromBlob(productFileBlob);//=> {ext: 'txt', mime: 'text/plain'}
@@ -44,9 +33,6 @@ export async function downloadWithZip(customFileName, itemDownloadUrl, thumbnail
         blobUrl: URL.createObjectURL(zipBlob),
         filename: customFileName + '.zip'
     });
-    // } catch (error) {
-    //     console.error('Zipアーカイブの作成またはダウンロード中にエラーが発生しました:', error);
-    // }
 }
 
 async function fetchThumbnail(thumbnailUrl) {
@@ -88,14 +74,14 @@ export async function convertPngToIcon(thumbnailBlob) {
                 URL.revokeObjectURL(img.src);
                 resolve();
             };
-            img.onerror = (e) => reject(new Error(`画像の読み込みに失敗: ${e}`));
+            img.onerror = (e) => reject(new Error(`failed to load thumbnail : ${e}`));
             img.src = URL.createObjectURL(thumbnailBlob);
         });
 
         // CanvasからPNG Blobを生成
         const pngBlob = await new Promise((resolve, reject) => {
             canvas.toBlob((blob) => {
-                if (!blob) reject(new Error("PNG blob生成に失敗"));
+                if (!blob) reject(new Error("failed to generate PNG blob"));
                 else resolve(blob);
             }, 'image/png');
         });
@@ -106,7 +92,7 @@ export async function convertPngToIcon(thumbnailBlob) {
 
         return icoBlob;
     } catch (error) {
-        console.error("ICO変換エラー:", error);
+        console.error("failed to converting .ico : ", error);
         throw error;
     }
 }
@@ -136,7 +122,7 @@ async function fetchItemBlob(downloadUrl, progressBarId) {
         // チャンク受信用のリスナー
         const chunkListener = (message) => {
             if (message.action === "receiveChunk") {
-                console.log(`チャンク受信: ${message.chunkIndex + 1}/${message.totalChunks}`);
+                console.log(`chunk received! : ${message.chunkIndex + 1}/${message.totalChunks}`);
 
                 // Base64データを抽出（データURLのヘッダー部分を削除）
                 const prefix = message.dataUrl.split(',')[0];
@@ -180,7 +166,7 @@ async function fetchItemBlob(downloadUrl, progressBarId) {
             (response) => {
                 if (chrome.runtime.lastError) {
                     chrome.runtime.onMessage.removeListener(chunkListener);
-                    reject(new Error("メッセージ送信エラー: " + chrome.runtime.lastError.message));
+                    reject(new Error("message sending error: " + chrome.runtime.lastError.message));
                     return;
                 }
 
@@ -191,7 +177,7 @@ async function fetchItemBlob(downloadUrl, progressBarId) {
                 }
 
                 if (response.status === "start") {
-                    console.log(`ダウンロード開始: 合計${response.totalChunks}チャンク, ${response.totalSize}バイト`);
+                    console.log(`starting download : total:${response.totalChunks}chunks, ${response.totalSize} Byte`);
                     totalChunks = response.totalChunks;
                     blobType = response.type || blobType;
                     console.log("filetype : ", blobType);

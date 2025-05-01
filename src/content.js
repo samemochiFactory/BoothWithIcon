@@ -1,4 +1,5 @@
-import { downloadWithZip } from './module_v2';
+// import { downloadWithZip } from './module_v2';
+import { DownloadTask } from './DownloadTask';
 
 // function getItemUrl(itemUrlElement) {
 //     const itemUrl = itemUrlElement ? itemUrlElement.href : 'Unknown';
@@ -126,35 +127,35 @@ async function main() {
             const progressBarWrapper = createProgressBar();
 
             //set function to customDownloadButton
-            customDownloadButton.addEventListener('click', async () => {
-                //
-                customDownloadButton.textContent = "Loading...";
-                progressBarWrapper.style.visibility = 'visible';//progressBarを表示
-                customDownloadButton.disabled = true;//ボタンをクリック出来なくする
-                console.log("click!");
-                console.log('ファイル名:', customFileName);
+            // customDownloadButton.addEventListener('click', async () => {
+            //     //
+            //     customDownloadButton.textContent = "Loading...";
+            //     progressBarWrapper.style.visibility = 'visible';//progressBarを表示
+            //     customDownloadButton.disabled = true;//ボタンをクリック出来なくする
+            //     console.log("click!");
+            //     console.log('ファイル名:', customFileName);
 
-                if (!downloadUrl) {
-                    console.error('ダウンロードURLが取得できていません');
-                    return;
-                }
-                //iconとファイルをまとめてDL(アイコン自動設定付き)
-                try {
-                    await downloadWithZip(customFileName, downloadUrl, thumbnailUrl, assetName, progressBarWrapper.id);
-                    customDownloadButton.textContent = `ダウンロード(サムネ付)`;
-                } catch (error) {
-                    console.error('Zipアーカイブの作成またはダウンロード中にエラーが発生しました:', error);
-                    customDownloadButton.textContent = "ERROR!";
-                } finally {
-                    customDownloadButton.disabled = false;//ボタンをクリック出来るようにする
-                    //progressBarのリセット
-                    const progressBar = progressBarWrapper.querySelector(".progress-bar");
-                    progressBar.style.width = "0%";
-                    progressBar.textContent = "";
-                    progressBarWrapper.style.visibility = 'hidden';//非表示
-                }
+            //     if (!downloadUrl) {
+            //         console.error('ダウンロードURLが取得できていません');
+            //         return;
+            //     }
+            //     //iconとファイルをまとめてDL(アイコン自動設定付き)
+            //     try {
+            //         await downloadWithZip(customFileName, downloadUrl, thumbnailUrl, assetName, progressBarWrapper.id);
+            //         customDownloadButton.textContent = `ダウンロード(サムネ付)`;
+            //     } catch (error) {
+            //         console.error('Zipアーカイブの作成またはダウンロード中にエラーが発生しました:', error);
+            //         customDownloadButton.textContent = "ERROR!";
+            //     } finally {
+            //         customDownloadButton.disabled = false;//ボタンをクリック出来るようにする
+            //         //progressBarのリセット
+            //         const progressBar = progressBarWrapper.querySelector(".progress-bar");
+            //         progressBar.style.width = "0%";
+            //         progressBar.textContent = "";
+            //         progressBarWrapper.style.visibility = 'hidden';//非表示
+            //     }
 
-            });
+            // });
 
             //WIP
             //----------------------------------------------------------------
@@ -166,14 +167,28 @@ async function main() {
             // customDownloadButton.addEventListener('click', () => {
             //     task.start();
             // });
+            const task = new DownloadTask({
+                customFileName,
+                downloadUrl,
+                thumbnailUrl,
+                assetName,
+                progressBarElement: progressBarWrapper
+            });
+
+            customDownloadButton.addEventListener('click', async () => {
+                customDownloadButton.disabled = true;
+                customDownloadButton.textContent = "Loading...";
+                await task.start();
+                customDownloadButton.textContent = "ダウンロード(サムネ付)";
+                customDownloadButton.disabled = false;
+            });
+
             //----------------------------------------------------------------
 
             //insert to assetContainer
             customWrapper.appendChild(customDownloadButton);
             customWrapper.appendChild(progressBarWrapper);
             assetContainerElement.appendChild(customWrapper);
-
-
 
             //↓↓↓.jsonからshopNameとitemName取ってくるやつ(注:この方法で取ったitemNameはバリエーション商品の区別が出来ない(桔梗用,マヌカ用,等))
             // try {
