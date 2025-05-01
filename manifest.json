@@ -4,7 +4,6 @@
     "version": "1.0.5",
     "description": "Boothのダウンロード商品を保存するときにアイコンを含めてフォルダを管理しやすくします．",
     "permissions": [
-        "storage",
         "downloads"
     ],
     "host_permissions": [
