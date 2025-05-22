@@ -24,20 +24,25 @@
     </div>
 
     <!-- 設定UI（今は非表示） -->
-    <!-- <div class="mb-3">
+    <div class="mb-3">
         <label class="form-label">ファイル命名規則</label>
-        <select class="form-select">
-            <option selected>ショップ名_商品名</option>
-            <option>商品名_ショップ名</option>
-        </select>
+        <div class="form-check form-check-inline">
+            <input class="form-check-input" type="checkbox" id="namingRuleShopProduct" value="ショップ名">
+            <label class="form-check-label" for="namingRuleShopProduct">ショップ名</label>
+        </div>
+        <div class="form-check form-check-inline">
+            <input class="form-check-input" type="checkbox" id="namingRuleProductName" value="商品名">
+            <label class="form-check-label" for="namingRuleProductName">商品名</label>
+        </div>
+        <div class="form-check form-check-inline">
+            <input class="form-check-input" type="checkbox" id="namingRuleFileName" value="ファイル名">
+            <label class="form-check-label" for="namingRuleFileName">ファイル名</label>
+        </div>
+        <div class="form-check form-check-inline">
+            <input class="form-check-input" type="checkbox" id="includeIcon" checked>
+            <label class="form-check-label" for="includeIcon">フォルダアイコンを含める</label>
+        </div>
     </div>
-
-    <div class="form-check mb-3">
-        <input class="form-check-input" type="checkbox" id="includeIcon" checked>
-        <label class="form-check-label" for="includeIcon">
-            アイコン画像を含める
-        </label>
-    </div> -->
 
     <!-- ショップリンク貼り付け欄 -->
     <!-- <div class="mb-3">
@@ -49,7 +54,9 @@
     </div> -->
 
     <!-- JS -->
-    <script src="popup.js"></script>
+    <!-- <script src="https://cdn.jsdelivr.net/npm/jquery@3.6.0/dist/jquery.min.js"></script> -->
+    <!-- <script src="popup.js"></script> -->
+    <script type="module" src="./popup.js"></script>
 </body>
 
 </html>

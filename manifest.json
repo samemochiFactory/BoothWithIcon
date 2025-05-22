@@ -1,10 +1,11 @@
 {
     "manifest_version": 3,
     "name": "Booth With Icon",
-    "version": "1.0.5",
+    "version": "1.1.0",
     "description": "Boothのダウンロード商品を保存するときにアイコンを含めてフォルダを管理しやすくします．",
     "permissions": [
-        "downloads"
+        "downloads",
+        "storage"
     ],
     "host_permissions": [
         "https://accounts.booth.pm/library",
@@ -18,7 +19,7 @@
     },
     "action": {
         "default_popup": "src/popup.html",
-        "default_title": "Booth With Icon(beta)"
+        "default_title": "Booth With Icon"
     },
     "icons": {
         "16": "static/icons/icon.png",

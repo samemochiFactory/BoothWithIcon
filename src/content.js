@@ -80,6 +80,7 @@ function createProgressBar() {
 }
 
 async function main() {
+    // console.log("main start");
     //Bootstrap追加
     const link = document.createElement("link");
     link.rel = "stylesheet";
@@ -126,47 +127,6 @@ async function main() {
             const customDownloadButton = createDownloadButton();//要変更
             const progressBarWrapper = createProgressBar();
 
-            //set function to customDownloadButton
-            // customDownloadButton.addEventListener('click', async () => {
-            //     //
-            //     customDownloadButton.textContent = "Loading...";
-            //     progressBarWrapper.style.visibility = 'visible';//progressBarを表示
-            //     customDownloadButton.disabled = true;//ボタンをクリック出来なくする
-            //     console.log("click!");
-            //     console.log('ファイル名:', customFileName);
-
-            //     if (!downloadUrl) {
-            //         console.error('ダウンロードURLが取得できていません');
-            //         return;
-            //     }
-            //     //iconとファイルをまとめてDL(アイコン自動設定付き)
-            //     try {
-            //         await downloadWithZip(customFileName, downloadUrl, thumbnailUrl, assetName, progressBarWrapper.id);
-            //         customDownloadButton.textContent = `ダウンロード(サムネ付)`;
-            //     } catch (error) {
-            //         console.error('Zipアーカイブの作成またはダウンロード中にエラーが発生しました:', error);
-            //         customDownloadButton.textContent = "ERROR!";
-            //     } finally {
-            //         customDownloadButton.disabled = false;//ボタンをクリック出来るようにする
-            //         //progressBarのリセット
-            //         const progressBar = progressBarWrapper.querySelector(".progress-bar");
-            //         progressBar.style.width = "0%";
-            //         progressBar.textContent = "";
-            //         progressBarWrapper.style.visibility = 'hidden';//非表示
-            //     }
-
-            // });
-
-            //WIP
-            //----------------------------------------------------------------
-            //ここでクラスをインスタンス化する．
-            // const task = new DownloadTask({//ダウンロードとprogressBarを管理するclass
-            //     downloadUrl, thumbnailUrl, assetName,
-            //     filename: customFileName,
-            // });
-            // customDownloadButton.addEventListener('click', () => {
-            //     task.start();
-            // });
             const task = new DownloadTask({
                 customFileName,
                 downloadUrl,
