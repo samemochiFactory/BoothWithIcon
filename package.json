@@ -2,7 +2,6 @@
   "dependencies": {
     "canvas-to-bmp": "^1.0.0",
     "file-type": "^20.4.1",
-    "jquery": "^3.7.1",
     "jszip": "^3.10.1"
   },
   "devDependencies": {

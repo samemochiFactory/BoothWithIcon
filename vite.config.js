@@ -13,11 +13,11 @@ export default defineConfig({
                     // src: 'static/icons/*',
                     src: 'static/icons/icon.png',
                     dest: 'static/icons'
-                },
-                {
-                    src: 'src/popup.html',
-                    dest: 'src'
                 }
+                // {
+                //     src: 'src/popup.html',
+                //     dest: 'src'
+                // }
             ]
         })
     ],
@@ -25,6 +25,7 @@ export default defineConfig({
         outDir: 'dist',
         emptyOutDir: true,// ビルド前に出力ディレクトリを空にする
         sourcemap: true,
+        // sourcemap: 'inline',
         rollupOptions: {
             input: {
                 background: resolve(__dirname, 'src/background.js'),

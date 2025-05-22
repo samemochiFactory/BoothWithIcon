@@ -26,6 +26,38 @@ async function fetchItemInfo(item_url) {
             });
     });
 }
+// ファイル名生成関数
+function generateCustomFileName(settings, shopName, productItemName, assetName) {
+    const parts = [];
+
+    if (settings.namingRules?.includes("ショップ名")) {
+        parts.push(shopName);
+    }
+    if (settings.namingRules?.includes("商品名")) {
+        parts.push(productItemName);
+    }
+    if (settings.namingRules?.includes("ファイル名")) {
+        parts.push(assetName);
+    }
+
+    return sanitizeFileName(parts.join('_'));
+}
+
+function generateFileNameFormatLabel(settings) {
+    const parts = [];
+
+    if (settings.namingRules?.includes("ショップ名")) {
+        parts.push("ショップ名");
+    }
+    if (settings.namingRules?.includes("商品名")) {
+        parts.push("商品名");
+    }
+    if (settings.namingRules?.includes("ファイル名")) {
+        parts.push("ファイル名");
+    }
+
+    return parts.join('_');
+}
 
 function sanitizeFileName(name) {
     return name.replace(/[\\/:*?"<>|]/g, '_');
@@ -109,10 +141,16 @@ async function main() {
         const itemNameElement = productItemElement.querySelector('.text-text-default');
         productItemName = itemNameElement.textContent.trim().replace(/\s+/g, ' ');
 
+        //load naming rule from storage
+        const settings = await new Promise((resolve) => {
+            chrome.storage.local.get(['namingRules'], resolve);
+        });
+        console.log(settings);
+
         //get assets containers (e.g. contains hoge.zip,downloadlink)
         const assetContainerElements = productItemElement.querySelector('.mt-16').children;
         for (assetContainerElement of assetContainerElements) {//assetContainerは一つだけダウンロードボタンを持つ
-            //get assetName
+            //get assetName(file name)
             const assetName = assetContainerElement.querySelector('.typography-14').textContent;
 
             //get downloadUrl
@@ -120,7 +158,8 @@ async function main() {
             // console.log(downloadUrl);
 
             //make fileName(後でフォーマット選べるようにする)
-            const customFileName = sanitizeFileName(`${shopName}_${productItemName}`);
+            // const customFileName = sanitizeFileName(`${shopName}_${productItemName}`);
+            const customFileName = generateCustomFileName(settings, shopName, productItemName, assetName);
 
             //make customDownloadButton and progressBar;
             const customWrapper = document.createElement('div');
@@ -135,17 +174,32 @@ async function main() {
                 progressBarElement: progressBarWrapper
             });
 
+            console.log(`custom file name:${customFileName}`);
+
             customDownloadButton.addEventListener('click', async () => {
                 customDownloadButton.disabled = true;
                 customDownloadButton.textContent = "Loading...";
                 await task.start();
-                customDownloadButton.textContent = "ダウンロード(サムネ付)";
+                customDownloadButton.textContent = `ダウンロード(サムネ付)`;
                 customDownloadButton.disabled = false;
             });
 
             //----------------------------------------------------------------
 
+            // 表示用ファイル名ラベル（命名規則の確認）
+            // const fileNameLabel = document.createElement('small');
+            // fileNameLabel.className = 'text-muted d-block mt-1'; // Bootstrap: 小さい文字 + margin
+            // fileNameLabel.textContent = `📄 ${customFileName}`;
+
+            //フォーマットラベル(命名規則)
+            const formatLabel = document.createElement('small');
+            formatLabel.className = 'text-muted d-block mt-1';
+            formatLabel.textContent = `${generateFileNameFormatLabel(settings)}.zip`;
+
             //insert to assetContainer
+            // customDownloadButton.appendChild(fileNameLabel);//最終的なカスタムファイル名を表示(長い...)
+            customDownloadButton.appendChild(formatLabel);//フォーマットだけ表示
+
             customWrapper.appendChild(customDownloadButton);
             customWrapper.appendChild(progressBarWrapper);
             assetContainerElement.appendChild(customWrapper);

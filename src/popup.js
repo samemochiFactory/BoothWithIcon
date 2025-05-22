@@ -1,42 +1,38 @@
-import $ from 'jquery'
+// console.log("Popup loaded!");
 
-console.log("Popup loaded!");
-// document.getElementById('fetchIconBtn').addEventListener('click',function () {
-//     const url = document.getElementById('shopUrl').value.trim();
-//     if (!url) {
-//         alert("URLを入力してください");
-//         return;
-//     }
+document.addEventListener('DOMContentLoaded', () => {
+    // 設定を読み込む
+    chrome.storage.local.get(['namingRules', 'includeIcon'], (result) => {
+        const namingRules = result.namingRules || [];
+        // const includeIcon = result.includeIcon ?? true;
 
-//     // TODO: URLを元にアイコンを取得してzip生成など
-//     console.log("Fetching icon for:", url);
-// });
-
-// localStorageから設定を読み込む関数
-function loadSettings() {
-    const settings = JSON.parse(localStorage.getItem('settings') || '{"namingRules": [], "includeIcon": true}');
-    $('#namingRuleShopProduct').prop('checked', settings.namingRules.includes('ショップ名'));
-    $('#namingRuleProductName').prop('checked', settings.namingRules.includes('商品名'));
-    $('#namingRuleFileName').prop('checked', settings.namingRules.includes('ファイル名'));
-    $('#includeIcon').prop('checked', settings.includeIcon);
-}
-
-// 設定を保存する関数
-function saveSettings() {
-    const namingRules = [];
-    $('input[type="checkbox"][id^="namingRule"]:checked').each(function () {
-        namingRules.push($(this).val());
+        document.getElementById('namingRuleShopProduct').checked = namingRules.includes('ショップ名');
+        document.getElementById('namingRuleProductName').checked = namingRules.includes('商品名');
+        document.getElementById('namingRuleFileName').checked = namingRules.includes('ファイル名');
+        // document.getElementById('includeIcon').checked = includeIcon;
     });
-    const includeIcon = $('#includeIcon').prop('checked');
 
-    localStorage.setItem('settings', JSON.stringify({
-        "namingRules": namingRules,
-        "includeIcon": includeIcon
-    }));
-}
+    // 変更イベントで保存
+    document.querySelectorAll('input[type="checkbox"]').forEach(checkbox => {
+        checkbox.addEventListener('change', () => {
+            const namingRules = [];
+            if (document.getElementById('namingRuleShopProduct').checked) namingRules.push('ショップ名');
+            if (document.getElementById('namingRuleProductName').checked) namingRules.push('商品名');
+            if (document.getElementById('namingRuleFileName').checked) namingRules.push('ファイル名');
+            // const includeIcon = document.getElementById('includeIcon').checked;
 
-// ページロード時に設定を読み込む
-loadSettings();
-
-// チェックボックスの状態が変更されたときに設定を保存する
-$('input[type="checkbox"]').on('change', saveSettings);
+            chrome.storage.local.set({
+                namingRules
+                // ,
+                // includeIcon
+            });
+        });
+    });
+});
+document.getElementById('applySettingsBtn').addEventListener('click', () => {
+    chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+        if (tabs[0]?.id) {
+            chrome.tabs.reload(tabs[0].id); // アクティブなタブをリロード
+        }
+    });
+});
