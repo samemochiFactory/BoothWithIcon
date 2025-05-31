@@ -150,7 +150,7 @@ async function main() {
         const assetContainerElements = productItemElement.querySelector('.mt-16').children;
         for (assetContainerElement of assetContainerElements) {//assetContainerは一つだけダウンロードボタンを持つ
             //get assetName(file name)
-            const assetName = assetContainerElement.querySelector('.typography-14').textContent;
+            const assetName = assetContainerElement.querySelector('.typography-14').textContent.trim().replace(/\.[^\.]+$/, '');
 
             //get downloadUrl
             const downloadUrl = assetContainerElement.querySelector('a').href;
