@@ -145,7 +145,6 @@ async function main() {
         const settings = await new Promise((resolve) => {
             chrome.storage.local.get(['namingRules'], resolve);
         });
-        console.log(settings);
 
         //get assets containers (e.g. contains hoge.zip,downloadlink)
         const assetContainerElements = productItemElement.querySelector('.mt-16').children;
@@ -173,8 +172,6 @@ async function main() {
                 assetName,
                 progressBarElement: progressBarWrapper
             });
-
-            console.log(`custom file name:${customFileName}`);
 
             customDownloadButton.addEventListener('click', async () => {
                 customDownloadButton.disabled = true;

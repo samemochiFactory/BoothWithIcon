@@ -10,14 +10,25 @@ export default defineConfig({
                     dest: ''
                 },
                 {
-                    // src: 'static/icons/*',
                     src: 'static/icons/icon.png',
                     dest: 'static/icons'
+                },
+                {
+                    src: 'static/desktop.ini',
+                    dest: 'static'
+                },
+                {
+                    src: 'static/setIcon.bat',
+                    dest: 'static'
+                },
+                {
+                    src: 'src/popup.html',
+                    dest: 'src'
+                },
+                {
+                    src: 'src/options.html',
+                    dest: 'src'
                 }
-                // {
-                //     src: 'src/popup.html',
-                //     dest: 'src'
-                // }
             ]
         })
     ],
@@ -25,17 +36,18 @@ export default defineConfig({
         outDir: 'dist',
         emptyOutDir: true,// ビルド前に出力ディレクトリを空にする
         sourcemap: true,
-        // sourcemap: 'inline',
         rollupOptions: {
             input: {
                 background: resolve(__dirname, 'src/background.js'),
                 content: resolve(__dirname, 'src/content.js'),
-                popup: resolve(__dirname, 'src/popup.html')
+                popup: resolve(__dirname, 'src/popup.js'),
+                options: resolve(__dirname, 'src/options.html')
             },
             output: {
+                format: "es",
                 entryFileNames: 'src/[name].js',
                 chunkFileNames: 'src/[name].js',
-                assetFileNames: 'src/[name][extname]'
+                assetFileNames: 'src/[name][extname]',
             }
         }
     }

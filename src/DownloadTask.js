@@ -49,8 +49,30 @@ export class DownloadTask {
         const fileMap = new Map();
         fileMap.set(`boothThumbnail.ico`, icoBlob);
         fileMap.set(this.assetName, productBlob);
-        fileMap.set("desktop.ini", `[.ShellClassInfo]\nIconResource=boothThumbnail.ico,0\n[ViewState]\nMode=\nVid=\nFolderType=Generic`);
-        fileMap.set("setIcon.bat", `@echo off\nsetlocal\nset "folder=%~dp0"\nset "folder=%folder:~0,-1%"\necho target folder: %folder%\nattrib +s +r "%folder%"\nattrib +h +s "%folder%\\desktop.ini"`);
+        // fileMap.set("desktop.ini", `[.ShellClassInfo]\nIconResource=boothThumbnail.ico,0\n[ViewState]\nMode=\nVid=\nFolderType=Generic`);
+        // fileMap.set("setIcon.bat", `@echo off\nsetlocal\nset "folder=%~dp0"\nset "folder=%folder:~0,-1%"\necho target folder: %folder%\nattrib +s +r "%folder%"\nattrib +h +s "%folder%\\desktop.ini"`);
+
+        // desktop.ini の内容を static/desktop.ini から読み込む
+        const desktopIniContent = await this._loadStaticFileAsText("desktop.ini");
+        if (desktopIniContent !== null) {
+            fileMap.set("desktop.ini", desktopIniContent);
+        } else {
+            // ファイル読み込み失敗時の処理 (例: エラーログ、デフォルト値の使用、処理の中断など)
+            console.warn("Warning: static/desktop.ini could not be loaded. Check the file path and server configuration.");
+            // 必要であれば、ここでフォールバックの値を設定することも可能です。
+            fileMap.set("desktop.ini", `[.ShellClassInfo]\nIconResource=boothThumbnail.ico,0\n[ViewState]\nMode=\nVid=\nFolderType=Generic`);
+        }
+
+        // setIcon.bat の内容を static/setIcon.bat から読み込む
+        const setIconBatContent = await this._loadStaticFileAsText("setIcon.bat");
+        if (setIconBatContent !== null) {
+            fileMap.set("setIcon.bat", setIconBatContent);
+        } else {
+            // ファイル読み込み失敗時の処理
+            console.warn("Warning: static/setIcon.bat could not be loaded. Check the file path and server configuration.");
+            // 必要であれば、ここでフォールバックの値を設定することも可能です。
+            fileMap.set("setIcon.bat", `@echo off\nsetlocal\nset "folder=%~dp0"\nset "folder=%folder:~0,-1%"\necho target folder: %folder%\nattrib +s +r "%folder%"\nattrib +h +s "%folder%\\desktop.ini"`);
+        }
 
         const zipBlob = await createZipArchive(fileMap);
         chrome.runtime.sendMessage({
@@ -58,6 +80,31 @@ export class DownloadTask {
             blobUrl: URL.createObjectURL(zipBlob),
             filename: this.customFileName + '.zip'
         });
+    }
+    /**
+ * staticディレクトリから指定されたファイルの内容を非同期でテキストとして読み込みます。
+ * @param {string} fileName - 読み込むファイル名 (例: "desktop.ini")
+ * @returns {Promise<string|null>} ファイルの内容の文字列。読み込み失敗時はnull。
+ */
+    async _loadStaticFileAsText(fileName) {
+        try {
+            // 'static/' フォルダからの相対パスでファイルを指定
+            const response = await fetch(`static/${fileName}`);
+
+            if (!response.ok) {
+                console.error(`Error fetching ${fileName}: ${response.status} ${response.statusText}`);
+                // HTTPステータスがエラーを示している場合 (例: 404 Not Found)
+                return null;
+            }
+
+            // レスポンスボディをテキストとして取得
+            const textContent = await response.text();
+            return textContent;
+        } catch (error) {
+            // ネットワークエラーやその他の予期せぬエラー
+            console.error(`Failed to load file ${fileName}:`, error);
+            return null;
+        }
     }
 
     _resetProgressBar() {

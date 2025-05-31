@@ -17,6 +17,10 @@
         "service_worker": "src/background.js",
         "type": "module"
     },
+    "options_ui": {
+        "page": "src/options.html",
+        "open_in_tab": true
+    },
     "action": {
         "default_popup": "src/popup.html",
         "default_title": "Booth With Icon"
@@ -33,10 +37,21 @@
             ],
             "js": [
                 "src/content.js"
-            ]
+            ],
+            "type": "module"
         }
     ],
     "content_security_policy": {
         "extension_pages": "script-src 'self'; object-src 'self'; style-src 'self' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com 'unsafe-inline';"
-    }
+    },
+    "web_accessible_resources": [
+        {
+            "resources": [
+                "src/options.js"
+            ],
+            "matches": [
+                "<all_urls>"
+            ]
+        }
+    ]
 }
