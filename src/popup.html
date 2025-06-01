@@ -12,119 +12,185 @@
     <!-- Font Awesome -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
     <style>
+        /* Boothテーマカラー定義 */
+        :root {
+            --booth-theme-color: #fc4d50;
+            --booth-theme-hover-color: #e04245;
+            /* 少し暗くしたホバー色 */
+            --booth-text-on-theme-color: #ffffff;
+        }
+
         /* Chrome拡張のオプションページ用のスタイル */
         .settings-section {
             background: #f8f9fa;
-            border-radius: 8px;
-            padding: 20px;
+            border-radius: 10px;
+            padding: 10px;
             margin-bottom: 20px;
-            border: 1px solid #dee2e6;
+            border: 2px solid #dee2e6;
+        }
+
+        /* チェックボックスのラベルが改行しないように少し詰める（必要に応じて） */
+        .form-check-inline {
+            margin-right: 0.4rem;
+            /* デフォルトは1rem、少し詰める */
+        }
+
+        .credit {
+            font-size: 0.5rem;
+        }
+
+        .form-check-inline:last-child {
+            margin-right: 0;
+        }
+
+        .form-check-label {
+            font-size: 0.7rem;
+            /* ラベルのフォントサイズを少し小さくする */
+        }
+
+        /* ポップアップタイトル */
+        .popup-title {
+            color: var(--booth-theme-color);
+            font-weight: bold;
+        }
+
+        /* Boothテーマカラーボタン */
+        .btn-booth-primary {
+            background-color: var(--booth-theme-color);
+            border-color: var(--booth-theme-color);
+            color: var(--booth-text-on-theme-color);
+        }
+
+        .btn-booth-primary:hover,
+        .btn-booth-primary:focus {
+            background-color: var(--booth-theme-hover-color);
+            border-color: var(--booth-theme-hover-color);
+            color: var(--booth-text-on-theme-color);
+        }
+
+        /* Boothテーマカラーアウトラインボタン */
+        .btn-outline-booth-primary {
+            color: var(--booth-theme-color);
+            border-color: var(--booth-theme-color);
+        }
+
+        .btn-outline-booth-primary:hover,
+        .btn-outline-booth-primary:focus {
+            background-color: var(--booth-theme-color);
+            color: var(--booth-text-on-theme-color);
+            border-color: var(--booth-theme-color);
+        }
+
+        /* チェックボックスのテーマカラー適用 */
+        .form-check-input:checked {
+            background-color: var(--booth-theme-color);
+            border-color: var(--booth-theme-color);
+        }
+
+        .form-check-input:focus {
+            border-color: var(--booth-theme-hover-color);
+            box-shadow: 0 0 0 0.25rem rgba(252, 77, 80, 0.25);
+            /* #fc4d50 のRGBA */
         }
     </style>
 </head>
 
-<body class="p-3 container-fluid" style="width: 500px;">
+<body class="pt-3 px-3 pb-2 container-fluid" style="width: 320px;">
     <div class="row">
         <div class="col-12">
 
-            <h5 class="mb-3 text-center">Booth With Icon</h5>
-
-            <!-- <div class="alert alert-warning p-2 mb-3" role="alert" style="font-size: 0.9em;">
-        機能追加のご要望や不具合のご報告は<br>
-        さめもち工房のDM等までお願いします。<br>
-        <a href="http://discord.gg/gC4nbpqwSZ" target="_blank"><i class="fab fa-discord"></i>Discord</a><br>
-        <a href="https://hrsm.booth.pm/" target="_blank"><i class="fas fa-store"></i>Booth</a><br>
-        <a href="https://x.com/hrsmshop" target="_blank"><i class="fab fa-x-twitter"></i>X</a><br>
-    </div> -->
-
-            <!-- 設定UI（今は非表示） -->
-            <div class="mb-3 settings-section">
+            <!-- <h5 class="mb-3 text-center">Booth With Icon</h5> -->
+            <div class="text-center mb-2">
+                <a href="https://accounts.booth.pm/library" target="_blank"
+                    class="btn btn-outline-booth-primary btn-sm">
+                    <i class="bi bi-collection"></i> ライブラリへ移動 (Booth)
+                </a>
+            </div>
+            <!-- 設定UI -->
+            <div class="mb-2 settings-section">
                 <!-- <label class="form-label">ファイル命名規則</label> -->
-                <h4 class="mb-3 text-center">
+                <h5 class="mb-1 text-center">
                     <!-- <i class="fas fa-cog" style="color: #6c757d;"></i> -->
                     ファイル命名規則
-                </h4>
-                <div class="mb-3">
-                    <div class="form-check form-check-inline">
-                        <input class="form-check-input" type="checkbox" id="namingRuleShopProduct" value="ショップ名">
-                        <label class="form-check-label" for="namingRuleShopProduct">ショップ名</label>
+                    </h4>
+                    <div class="mb-1 d-flex justify-content-center">
+                        <div class="form-check form-check-inline">
+                            <input class="form-check-input" type="checkbox" id="namingRuleShopProduct" value="ショップ名">
+                            <label class="form-check-label" for="namingRuleShopProduct">ショップ名</label>
+                        </div>
+                        <div class="form-check form-check-inline">
+                            <input class="form-check-input" type="checkbox" id="namingRuleProductName" value="商品名">
+                            <label class="form-check-label" for="namingRuleProductName">商品名</label>
+                        </div>
+                        <div class="form-check form-check-inline">
+                            <input class="form-check-input" type="checkbox" id="namingRuleFileName" value="ファイル名">
+                            <label class="form-check-label" for="namingRuleFileName">ファイル名</label>
+                        </div>
                     </div>
-                    <div class="form-check form-check-inline">
-                        <input class="form-check-input" type="checkbox" id="namingRuleProductName" value="商品名">
-                        <label class="form-check-label" for="namingRuleProductName">商品名</label>
-                    </div>
-                    <div class="form-check form-check-inline">
-                        <input class="form-check-input" type="checkbox" id="namingRuleFileName" value="ファイル名">
-                        <label class="form-check-label" for="namingRuleFileName">ファイル名</label>
-                    </div>
-                </div>
+            </div>
+            <div class="text-center">
+                <button class="btn btn-booth-primary btn-large" id="applySettingsBtn">
+                    <i class="bi bi-arrow-clockwise"></i>
+                    適用(F5)
+                </button>
+            </div>
+        </div>
 
-                <!-- <div class="form-check form-check-inline">
-            <input class="form-check-input" type="checkbox" id="includeIcon" checked>
-            <label class="form-check-label" for="includeIcon">フォルダアイコンを含める</label>
+        <!-- ショップリンク貼り付け欄 -->
+        <!-- <div class="mb-3">
+            <label for="shopUrl" class="form-label">商品ページからローカルフォルダにアイコン設定</label>
+            <input type="url" class="form-control" id="shopUrl" placeholder="https://booth.pm/items/xxxx">
         </div> -->
-                <!-- <br> -->
-                <div class="text-center">
-                    <button class="btn btn-outline-success btn-large" id="applySettingsBtn">
-                        <i class="bi bi-arrow-clockwise"></i>
-                        適用(F5)
-                    </button>
-                </div>
-            </div>
 
-            <!-- ショップリンク貼り付け欄 -->
-            <div class="mb-3">
-                <label for="shopUrl" class="form-label">商品ページからローカルフォルダにアイコン設定</label>
-                <input type="url" class="form-control" id="shopUrl" placeholder="https://booth.pm/items/xxxx">
-            </div>
-
-            <!-- フォルダ選択 -->
-            <!-- <div class="mb-3">
+        <!-- フォルダ選択 -->
+        <!-- <div class="mb-3">
         <label for="folderPicker" class="form-label">保存先フォルダの選択</label>
         <button class="btn btn-outline-secondary w-100" id="folderPicker">フォルダを選択</button>
         <div id="selectedFolderName" class="form-text mt-1 text-truncate"></div>
     </div> -->
-            <!-- フォルダ表示 + 設定 -->
-            <div class="mb-3 d-flex justify-content-between align-items-center">
-                <label class="form-label mb-0">保存先フォルダ</label>
-                <a href="options.html" title="設定">
-                    <i class="fas fa-cog"></i>
+        <!-- フォルダ表示 + 設定 -->
+        <!-- <div class="mb-3 d-flex justify-content-between align-items-center">
+            <label class="form-label mb-0">保存先フォルダ</label>
+            <a href="options.html" title="設定">
+                <i class="fas fa-cog"></i>
+            </a>
+        </div>
+        <div id="selectedFolderName" class="form-text text-truncate mb-3">（未選択）</div> -->
+
+        <!-- 実行ボタン -->
+        <!-- <div class="d-grid">
+            <button class="btn btn-primary" id="fetchIconBtn" disabled>フォルダにアイコンを設定</button>
+        </div> -->
+
+        <!-- フッター -->
+        <div class="text-center mt-2 pt-2 px-2 pb-1 border-top">
+            <p class="text-muted small mb-1">
+                機能追加のご要望や不具合報告
+
+            </p>
+            <div class="d-flex justify-content-center gap-2">
+                <a href="http://discord.gg/gC4nbpqwSZ" title="Discord" target="_blank" class="btn btn-sm ">
+                    <i class="fab fa-discord"></i>
+                </a>
+                <a href="https://hrsm.booth.pm/" title="Booth" target="_blank" class="btn btn-sm ">
+                    <i class="fas fa-store"></i>
+                </a>
+                <a href="https://x.com/hrsmshop" title="X(Twitter)" target="_blank" class="btn btn-sm ">
+                    <i class="fab fa-x-twitter"></i>
+                </a>
+                <a href="https://github.com/samemochiFactory/BoothWithIcon" title="GitHub" target="_blank"
+                    class="btn btn-sm ">
+                    <i class="bi bi-github"></i>
                 </a>
             </div>
-            <div id="selectedFolderName" class="form-text text-truncate mb-3">（未選択）</div>
-
-            <!-- 実行ボタン -->
-            <div class="d-grid">
-                <button class="btn btn-primary" id="fetchIconBtn" disabled>フォルダにアイコンを設定</button>
-            </div>
-
-            <!-- フッター -->
-            <div class="text-center mb-3 p-2 border-top">
-                <p class="text-muted">
-                    機能追加のご要望や不具合報告
-
-                </p>
-                <div class="d-flex justify-content-center gap-3">
-                    <a href="http://discord.gg/gC4nbpqwSZ" title="Discord" target="_blank"
-                        class="btn btn-outline-primary">
-                        <i class="fab fa-discord"></i>
-                    </a>
-                    <a href="https://hrsm.booth.pm/" title="Booth" target="_blank" class="btn btn-outline-danger">
-                        <i class="fas fa-store"></i>
-                    </a>
-                    <a href="https://x.com/hrsmshop" title="X(Twitter)" target="_blank" class="btn btn-outline-info">
-                        <i class="fab fa-x-twitter"></i>
-                    </a>
-                    <a href="https://github.com/samemochiFactory/BoothWithIcon" title="GitHub" target="_blank"
-                        class="btn btn-outline-secondary">
-                        <i class="bi bi-github"></i>
-                    </a>
-                </div>
-            </div>
+            <p class="text-muted credit mb-0">
+                うぃずあいこん！ v1.1.0 &copy; 2025 さめもち工房
+            </p>
         </div>
+    </div>
 
-        <!-- JS -->
-        <script type="module" src="popup.js"></script>
+    <!-- JS -->
+    <script type="module" src="popup.js"></script>
     </div>
 </body>
 

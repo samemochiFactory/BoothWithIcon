@@ -1,21 +1,23 @@
 
 chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
-    if (msg.action === 'download') {
-        //商品をDLするときに使われる
-        console.log("filename:", msg.filename);
-        console.log("url:", msg.url);
-        chrome.downloads.download({
-            url: msg.url,
-            filename: msg.filename,
-            saveAs: true
-        }, (downloadId) => {
-            if (chrome.runtime.lastError) {
-                console.error('Download error:', chrome.runtime.lastError);
-            } else {
-                console.log('Download started:', downloadId);
-            }
-        });
-    }
+    // if (msg.action === 'download') {
+    //     //商品をDLするときに使われる
+    //     console.log("filename:", msg.filename);
+    //     console.log("url:", msg.url);
+    //     chrome.downloads.download({
+    //         url: msg.url,
+    //         filename: msg.filename,
+    //         saveAs: true
+    //     }, (downloadId) => {
+    //         if (chrome.runtime.lastError) {
+    //             console.error('Download error:', chrome.runtime.lastError);
+    //         } else {
+    //             console.log('Download started:', downloadId);
+    //         }
+    //     });
+    // }
+
+    //TODO:fetch系の関数は共通化して，responseの処理方法をフロント側で変えるとかする．
     if (msg.action === "fetchItemInfo") {
         //商品ページ.jsonを取得するときに使われる
         console.log("fetchItemInfo");

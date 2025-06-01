@@ -69,7 +69,6 @@ function createDownloadButton() {
     customButtonElement.classList.add("text-wrap");
 
     customButtonElement.textContent = `ダウンロード(サムネ付)`;
-    // customButtonElement.className = 'btn btn-outline-primary custom-dl-button px-4 py-2 bg-blue-500 rounded text-sm';
     customButtonElement.className = 'btn btn-outline-primary btn-sm';
 
     return customButtonElement;
@@ -149,7 +148,7 @@ async function main() {
         //get assets containers (e.g. contains hoge.zip,downloadlink)
         const assetContainerElements = productItemElement.querySelector('.mt-16').children;
         for (assetContainerElement of assetContainerElements) {//assetContainerは一つだけダウンロードボタンを持つ
-            //get assetName(file name)
+            //get assetName(file name) + remove ext
             const assetName = assetContainerElement.querySelector('.typography-14').textContent.trim().replace(/\.[^\.]+$/, '');
 
             //get downloadUrl
@@ -157,7 +156,6 @@ async function main() {
             // console.log(downloadUrl);
 
             //make fileName(後でフォーマット選べるようにする)
-            // const customFileName = sanitizeFileName(`${shopName}_${productItemName}`);
             const customFileName = generateCustomFileName(settings, shopName, productItemName, assetName);
 
             //make customDownloadButton and progressBar;
@@ -177,24 +175,19 @@ async function main() {
                 customDownloadButton.disabled = true;
                 customDownloadButton.textContent = "Loading...";
                 await task.start();
+                //reset
+                customDownloadButton.appendChild(formatLabel);
                 customDownloadButton.textContent = `ダウンロード(サムネ付)`;
                 customDownloadButton.disabled = false;
             });
 
             //----------------------------------------------------------------
-
-            // 表示用ファイル名ラベル（命名規則の確認）
-            // const fileNameLabel = document.createElement('small');
-            // fileNameLabel.className = 'text-muted d-block mt-1'; // Bootstrap: 小さい文字 + margin
-            // fileNameLabel.textContent = `📄 ${customFileName}`;
-
             //フォーマットラベル(命名規則)
             const formatLabel = document.createElement('small');
             formatLabel.className = 'text-muted d-block mt-1';
             formatLabel.textContent = `${generateFileNameFormatLabel(settings)}.zip`;
 
             //insert to assetContainer
-            // customDownloadButton.appendChild(fileNameLabel);//最終的なカスタムファイル名を表示(長い...)
             customDownloadButton.appendChild(formatLabel);//フォーマットだけ表示
 
             customWrapper.appendChild(customDownloadButton);
