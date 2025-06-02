@@ -28,6 +28,10 @@ export default defineConfig({
                 {
                     src: 'src/options.html',
                     dest: 'src'
+                },
+                {
+                    src: 'src/content_styles.css',
+                    dest: 'src'
                 }
             ]
         })

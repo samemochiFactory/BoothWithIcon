@@ -111,26 +111,22 @@ function createProgressBar() {
 }
 
 async function main() {
-    // console.log("main start");
-    //Bootstrap追加
+    //--------------Bootstrap追加----------------
     const link = document.createElement("link");
     link.rel = "stylesheet";
     link.href = "https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css";
-    document.head.appendChild(link);//add bootstrap
-
-    //new----------------------------------------
+    document.head.appendChild(link);
+    //-------------------------------------------
 
     //get item container (e.g. contains thumbnail,assets)
     const productItemElements = document.querySelectorAll('.mb-16');
     for (productItemElement of productItemElements) {
-        // console.log(productItemElement);
 
         let shopName = "unknownShopName";//default
         let productItemName = "unknownItemName";//default
 
         //get thumbnailUrl
         const thumbnailUrl = productItemElement.querySelector('.l-library-item-thumbnail').src;
-        // console.log(thumbnailUrl);
 
         //get author
         const shopNameElement = productItemElement.querySelector('.text-text-gray600');
@@ -171,17 +167,6 @@ async function main() {
                 progressBarElement: progressBarWrapper
             });
 
-            customDownloadButton.addEventListener('click', async () => {
-                customDownloadButton.disabled = true;
-                customDownloadButton.textContent = "Loading...";
-                await task.start();
-                //reset
-                customDownloadButton.appendChild(formatLabel);
-                customDownloadButton.textContent = `ダウンロード(サムネ付)`;
-                customDownloadButton.disabled = false;
-            });
-
-            //----------------------------------------------------------------
             //フォーマットラベル(命名規則)
             const formatLabel = document.createElement('small');
             formatLabel.className = 'text-muted d-block mt-1';
@@ -190,6 +175,17 @@ async function main() {
             //insert to assetContainer
             customDownloadButton.appendChild(formatLabel);//フォーマットだけ表示
 
+            customDownloadButton.addEventListener('click', async () => {
+                customDownloadButton.disabled = true;
+                customDownloadButton.textContent = "Loading...";
+                await task.start();
+                //reset
+                customDownloadButton.textContent = `ダウンロード(サムネ付)`;
+                customDownloadButton.appendChild(formatLabel);
+                customDownloadButton.disabled = false;
+            });
+
+            //----------------------------------------------------------------
             customWrapper.appendChild(customDownloadButton);
             customWrapper.appendChild(progressBarWrapper);
             assetContainerElement.appendChild(customWrapper);
