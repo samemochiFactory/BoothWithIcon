@@ -63,59 +63,86 @@ function sanitizeFileName(name) {
     return name.replace(/[\\/:*?"<>|]/g, '_');
 }
 
-function createDownloadButton() {
-    //--------ボタン作成--------
-    const customButtonElement = document.createElement('button');
-    customButtonElement.classList.add("text-wrap");
+// function createDownloadButton() {
+//     //--------ボタン作成--------
+//     const customButtonElement = document.createElement('button');
+//     customButtonElement.classList.add("text-wrap");
 
-    customButtonElement.textContent = `ダウンロード(サムネ付)`;
-    customButtonElement.className = 'btn btn-outline-primary btn-sm';
+//     customButtonElement.textContent = `ダウンロード(サムネ付)`;
+//     customButtonElement.className = 'btn btn-outline-primary btn-sm';
 
-    return customButtonElement;
-}
+//     return customButtonElement;
+// }
 
 //progressBar作ってElementを返すやつ
-function createProgressBar() {
-    //Wrapper
-    const progressWrapperElement = document.createElement("div");
-    progressWrapperElement.style.visibility = 'hidden';//非表示
-    progressWrapperElement.className = "progress";
-    progressWrapperElement.style.height = "20px"; // 高さ調整（任意）
-    progressWrapperElement.style.borderRadius = "10px"; // 外枠の角丸
-    //add id to Wrapper
-    progressWrapperElement.id = crypto.randomUUID();
+// function createProgressBar() {
+//     //Wrapper
+//     const progressWrapperElement = document.createElement("div");
+//     progressWrapperElement.style.visibility = 'hidden';//非表示
+//     progressWrapperElement.className = "progress";
+//     progressWrapperElement.style.height = "20px"; // 高さ調整（任意）
+//     progressWrapperElement.style.borderRadius = "10px"; // 外枠の角丸
+//     //add id to Wrapper
+//     progressWrapperElement.id = crypto.randomUUID();
 
-    //progressBar
-    const progressBar = document.createElement("div");
-    progressBar.className = "progress-bar";
-    progressBar.ariaValueMax = "100";
-    progressBar.ariaValueMin = "0";
-    progressBar.style.width = "0%";  // 進捗
-    progressBar.style.backgroundColor = "#fc4d50"//booth theme color
-    progressBar.style.borderRadius = "10px"; // 中身の角丸
-    progressBar.textContent = "";
-    // progressBar.ariaValueNow = '50';
+//     //progressBar
+//     const progressBar = document.createElement("div");
+//     progressBar.className = "progress-bar";
+//     progressBar.ariaValueMax = "100";
+//     progressBar.ariaValueMin = "0";
+//     progressBar.style.width = "0%";  // 進捗
+//     progressBar.style.backgroundColor = "#fc4d50"//booth theme color
+//     progressBar.style.borderRadius = "10px"; // 中身の角丸
+//     progressBar.textContent = "";
+//     // progressBar.ariaValueNow = '50';
 
-    progressWrapperElement.appendChild(progressBar);
+//     progressWrapperElement.appendChild(progressBar);
 
-    const progressListener = (message) => {
-        if ((message.action === "receiveChunk") && (message.progressBarId === progressWrapperElement.id)) {
-            const progress = Math.round(100 * ((message.chunkIndex + 1) / message.totalChunks));
-            progressBar.textContent = `${progress}%`;
-            progressBar.style.width = `${progress}%`;
+//     const progressListener = (message) => {
+//         if ((message.action === "receiveChunk") && (message.progressBarId === progressWrapperElement.id)) {
+//             const progress = Math.round(100 * ((message.chunkIndex + 1) / message.totalChunks));
+//             progressBar.textContent = `${progress}%`;
+//             progressBar.style.width = `${progress}%`;
+//         }
+//     }
+//     chrome.runtime.onMessage.addListener(progressListener);
+
+//     return progressWrapperElement
+// }
+
+// HTMLテンプレートを読み込み、DOM要素として返す関数
+async function loadUITemplate(templatePath) {
+    try {
+        const templateUrl = chrome.runtime.getURL(templatePath); //
+        const response = await fetch(templateUrl); //
+        if (!response.ok) {
+            throw new Error(`Failed to fetch template '${templatePath}': ${response.statusText}`);
         }
+        const htmlString = await response.text(); //
+        const parser = new DOMParser(); //
+        const doc = parser.parseFromString(htmlString, 'text/html'); //
+        const templateNode = doc.querySelector('.bwi-custom-wrapper'); // テンプレートのルート要素を取得
+        if (!templateNode) {
+            throw new Error(`Root element '.bwi-custom-wrapper' not found in template '${templatePath}'`);
+        }
+        return templateNode.cloneNode(true); // クローンして返す (複数の場所で使う場合のため)
+    } catch (error) {
+        console.error('Error loading UI template:', error);
+        return null;
     }
-    chrome.runtime.onMessage.addListener(progressListener);
-
-    return progressWrapperElement
 }
 
 async function main() {
     //--------------Bootstrap追加----------------
-    const link = document.createElement("link");
-    link.rel = "stylesheet";
-    link.href = "https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css";
-    document.head.appendChild(link);
+    // const link = document.createElement("link");
+    // link.rel = "stylesheet";
+    // link.href = "https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css";
+    // document.head.appendChild(link);
+    //icon
+    const link2 = document.createElement("link");
+    link2.rel = "stylesheet";
+    link2.href = "https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css";
+    document.head.appendChild(link2);
     //-------------------------------------------
 
     //get item container (e.g. contains thumbnail,assets)
@@ -144,20 +171,41 @@ async function main() {
         //get assets containers (e.g. contains hoge.zip,downloadlink)
         const assetContainerElements = productItemElement.querySelector('.mt-16').children;
         for (assetContainerElement of assetContainerElements) {//assetContainerは一つだけダウンロードボタンを持つ
-            //get assetName(file name) + remove ext
-            const assetName = assetContainerElement.querySelector('.typography-14').textContent.trim().replace(/\.[^\.]+$/, '');
+            //get assetName(file name)
+            const assetName = assetContainerElement.querySelector('.typography-14').textContent.trim();
 
             //get downloadUrl
             const downloadUrl = assetContainerElement.querySelector('a').href;
             // console.log(downloadUrl);
 
-            //make fileName(後でフォーマット選べるようにする)
-            const customFileName = generateCustomFileName(settings, shopName, productItemName, assetName);
+            //make fileName (+ remove ext from assetName)
+            const customFileName = generateCustomFileName(settings, shopName, productItemName, assetName.replace(/\.[^\.]+$/, ''));
 
+            // ▼▼▼ テンプレートからUIを読み込む ▼▼▼
+            const customUiElement = await loadUITemplate('src/ui_template.html');
+            if (!customUiElement) {
+                console.error('Failed to load UI template for asset, skipping:', assetName);
+                continue; // テンプレート読み込み失敗時はスキップ
+            }
+            // テンプレート内の各要素を取得
+            const customDownloadButton = customUiElement.querySelector('.bwi-download-button');
+            const mainTextSpan = customDownloadButton.querySelector('.bwi-main-text');
+            const formatLabelElement = customDownloadButton.querySelector('.bwi-format-label');
+            const progressBarWrapper = customUiElement.querySelector('.bwi-progress-wrapper');
+            // const progressBar = progressBarWrapper.querySelector('.bwi-progress-bar');
+
+            // // プログレスバーにユニークIDを設定 (メッセージング用)
+            // const uniqueProgressBarId = `bwi-progress-${crypto.randomUUID()}`;
+            // progressBarWrapper.id = uniqueProgressBarId;
+
+            // フォーマットラベル設定
+            formatLabelElement.textContent = `${generateFileNameFormatLabel(settings)}.zip`;
+
+            //----------------------------------------------------------------------------
             //make customDownloadButton and progressBar;
-            const customWrapper = document.createElement('div');
-            const customDownloadButton = createDownloadButton();//要変更
-            const progressBarWrapper = createProgressBar();
+            // const customWrapper = document.createElement('div');
+            // const customDownloadButton = createDownloadButton();//要変更
+            // const progressBarWrapper = createProgressBar();
 
             const task = new DownloadTask({
                 customFileName,
@@ -167,28 +215,58 @@ async function main() {
                 progressBarElement: progressBarWrapper
             });
 
-            //フォーマットラベル(命名規則)
-            const formatLabel = document.createElement('small');
-            formatLabel.className = 'text-muted d-block mt-1';
-            formatLabel.textContent = `${generateFileNameFormatLabel(settings)}.zip`;
+            customDownloadButton.addEventListener('click', async () => { //
+                customDownloadButton.disabled = true; //
+                mainTextSpan.textContent = "Loading..."; //
+                // progressBarWrapper.style.visibility = 'visible'; // プログレスバー表示
 
-            //insert to assetContainer
-            customDownloadButton.appendChild(formatLabel);//フォーマットだけ表示
+                await task.start(); //
 
-            customDownloadButton.addEventListener('click', async () => {
-                customDownloadButton.disabled = true;
-                customDownloadButton.textContent = "Loading...";
-                await task.start();
-                //reset
-                customDownloadButton.textContent = `ダウンロード(サムネ付)`;
-                customDownloadButton.appendChild(formatLabel);
-                customDownloadButton.disabled = false;
+                // reset
+                mainTextSpan.textContent = `サムネ付`; //
+                customDownloadButton.disabled = false; //
+                // progressBarWrapper.style.visibility = 'hidden'; // プログレスバー非表示
+                // progressBar.style.width = "0%";
+                // progressBar.textContent = "0%";
+                // progressBar.setAttribute("aria-valuenow", "0");
             });
 
-            //----------------------------------------------------------------
-            customWrapper.appendChild(customDownloadButton);
-            customWrapper.appendChild(progressBarWrapper);
-            assetContainerElement.appendChild(customWrapper);
+            // assetContainerElement.appendChild(customUiElement); // テンプレートから作成したUI全体を挿入
+            // ▼▼▼ 新しい挿入ロジック ▼▼▼
+            // 既存のダウンロードリンクなどを内包するコンテナを探す
+            // const downloadActionsContainer = assetContainerElement.querySelector('.shrink-0.flex.items-center.gap-16');
+            const downloadActionsContainer = assetContainerElement.querySelector('.mt-8');
+            if (downloadActionsContainer) {
+                // このコンテナは既にflexコンテナなので、その子として追加すれば横に並ぶはず
+                customUiElement.style.marginLeft = '16px'; // gap-16 に合わせてマージンを追加（またはCSSで）
+                downloadActionsContainer.appendChild(customUiElement);
+            } else {
+                // フォールバック
+                assetContainerElement.appendChild(customUiElement);
+            }
+            // ▲▲▲ 新しい挿入ロジックここまで ▲▲▲
+
+            // //フォーマットラベル(命名規則)
+            // const formatLabel = document.createElement('small');
+            // formatLabel.className = 'text-muted d-block mt-1';
+            // formatLabel.textContent = `${generateFileNameFormatLabel(settings)}.zip`;
+
+            // // insert to assetContainer
+            // customDownloadButton.appendChild(formatLabel);//フォーマットだけ表示
+
+            // customDownloadButton.addEventListener('click', async () => {
+            //     customDownloadButton.disabled = true;
+            //     customDownloadButton.textContent = "Loading...";
+            //     await task.start();
+            //     //reset
+            //     customDownloadButton.textContent = `ダウンロード(サムネ付)`;
+            //     customDownloadButton.appendChild(formatLabel);
+            //     customDownloadButton.disabled = false;
+            // });
+
+            // customWrapper.appendChild(customDownloadButton);
+            // customWrapper.appendChild(progressBarWrapper);
+            // assetContainerElement.appendChild(customWrapper);
 
             //↓↓↓.jsonからshopNameとitemName取ってくるやつ(注:この方法で取ったitemNameはバリエーション商品の区別が出来ない(桔梗用,マヌカ用,等))
             // try {
@@ -207,4 +285,9 @@ async function main() {
         }
     }
 }
+// // main関数の外で一度だけリスナーを登録
+// if (!window.isBwiProgressListenerAdded) { // 重複登録防止フラグ
+//     chrome.runtime.onMessage.addListener(globalProgressListener);
+//     window.isBwiProgressListenerAdded = true;
+// }
 main();

@@ -20,9 +20,12 @@ export class DownloadTask {
         return (message) => {
             if (message.action === "receiveChunk" && message.progressBarId === this.progressBarId) {
                 const progress = Math.round(100 * ((message.chunkIndex + 1) / message.totalChunks));
-                const bar = this.progressBarElement.querySelector(".progress-bar");
-                bar.style.width = `${progress}%`;
-                bar.textContent = `${progress}%`;
+                const bar = this.progressBarElement.querySelector(".bwi-progress-bar");
+                if (bar) {
+                    bar.style.width = `${progress}%`;
+                    bar.textContent = `${progress}%`;
+                    bar.setAttribute("aria-valuenow", progress.toString()); // aria-valuenowも更新
+                }
             }
         };
     }
@@ -108,9 +111,12 @@ export class DownloadTask {
     }
 
     _resetProgressBar() {
-        const bar = this.progressBarElement.querySelector(".progress-bar");
-        bar.style.width = "0%";
-        bar.textContent = "";
+        const bar = this.progressBarElement.querySelector(".bwi-progress-bar");
+        if (bar) { // barが存在するか確認
+            bar.style.width = "0%";
+            bar.textContent = ""; // "0%" ではなく空にする
+            bar.setAttribute("aria-valuenow", "0"); // WAI-ARIA属性もリセット
+        }
         this.progressBarElement.style.visibility = 'hidden';
     }
 }

@@ -32,6 +32,9 @@ export default defineConfig({
                 {
                     src: 'src/content_styles.css',
                     dest: 'src'
+                }, {
+                    src: 'src/ui_template.html',
+                    dest: 'src'
                 }
             ]
         })
