@@ -1,2 +1,88 @@
-chrome.runtime.onMessage.addListener((t,l,o)=>{if(t.action==="fetchItemInfo")return console.log("fetchItemInfo"),console.log(t.url),fetch(t.url).then(r=>{if(!r.ok)throw new Error(`response status : ${r.status}`);return r.json()}).then(r=>{o({data:r})}).catch(r=>{console.error("fetch error:",r),console.error("error url:",t.url),o({error:r.msg})}),!0;if(t.action==="fetchItem")return fetch(t.url).then(e=>e.blob()).then(async e=>{const a=Math.ceil(e.size/10485760);o({status:"start",totalChunks:a,totalSize:e.size,type:e.type});for(let n=0;n<a;n++){const h=n*10485760,i=Math.min(h+10485760,e.size),u=e.slice(h,i),c=new FileReader;await new Promise(s=>{c.onloadend=()=>{chrome.tabs.sendMessage(l.tab.id,{action:"receiveChunk",chunkIndex:n,totalChunks:a,dataUrl:c.result,progressBarId:t.progressBarId}),s()},c.readAsDataURL(u)})}}).catch(e=>{console.error("chunk sending error:",e),chrome.tabs.sendMessage(l.tab.id,{action:"downloadError",downloadId:t.downloadId,error:e.toString()})}),!0;if(t.action==="fetchThumbnail")return console.log("fetchThumbnail"),console.log(t.url),fetch(t.url).then(r=>{if(!r.ok)throw new Error(`response status: ${r.status}`);return r.arrayBuffer()}).then(r=>{o({data:Array.from(new Uint8Array(r))})}).catch(r=>{console.error("fetch error",r),o({error:r.msg,data:null})}),!0;t.action==="downloadZip"&&chrome.downloads.download({url:t.blobUrl,filename:t.filename,saveAs:!0},r=>{chrome.runtime.lastError?console.error("Download failed:",chrome.runtime.lastError):console.log("Download started:",r)})});
+chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
+  if (msg.action === "fetchItemInfo") {
+    console.log("fetchItemInfo");
+    console.log(msg.url);
+    fetch(msg.url).then((response) => {
+      if (!response.ok) {
+        throw new Error(`response status : ${response.status}`);
+      }
+      return response.json();
+    }).then((data) => {
+      sendResponse({ data });
+    }).catch((error) => {
+      console.error("fetch error:", error);
+      console.error("error url:", msg.url);
+      sendResponse({ error: error.msg });
+    });
+    return true;
+  }
+  if (msg.action === "fetchItem") {
+    const CHUNK_SIZE = 10 * 1024 * 1024;
+    fetch(msg.url).then((response) => response.blob()).then(async (blob) => {
+      const totalChunks = Math.ceil(blob.size / CHUNK_SIZE);
+      sendResponse({
+        status: "start",
+        totalChunks,
+        totalSize: blob.size,
+        type: blob.type
+      });
+      for (let chunkIndex = 0; chunkIndex < totalChunks; chunkIndex++) {
+        const start = chunkIndex * CHUNK_SIZE;
+        const end = Math.min(start + CHUNK_SIZE, blob.size);
+        const chunkBlob = blob.slice(start, end);
+        const reader = new FileReader();
+        await new Promise((resolve) => {
+          reader.onloadend = () => {
+            chrome.tabs.sendMessage(sender.tab.id, {
+              action: "receiveChunk",
+              chunkIndex,
+              totalChunks,
+              dataUrl: reader.result,
+              progressBarId: msg.progressBarId
+            });
+            resolve();
+          };
+          reader.readAsDataURL(chunkBlob);
+        });
+      }
+    }).catch((error) => {
+      console.error("chunk sending error:", error);
+      chrome.tabs.sendMessage(sender.tab.id, {
+        action: "downloadError",
+        downloadId: msg.downloadId,
+        error: error.toString()
+      });
+    });
+    return true;
+  }
+  if (msg.action === "fetchThumbnail") {
+    console.log("fetchThumbnail");
+    console.log(msg.url);
+    fetch(msg.url).then((response) => {
+      if (!response.ok) {
+        throw new Error(`response status: ${response.status}`);
+      }
+      return response.arrayBuffer();
+    }).then((arrayBuffer) => {
+      sendResponse({ data: Array.from(new Uint8Array(arrayBuffer)) });
+    }).catch((error) => {
+      console.error("fetch error", error);
+      sendResponse({ error: error.msg, data: null });
+    });
+    return true;
+  }
+  if (msg.action === "downloadZip") {
+    chrome.downloads.download({
+      url: msg.blobUrl,
+      filename: msg.filename,
+      saveAs: true
+    }, (downloadId) => {
+      if (chrome.runtime.lastError) {
+        console.error("Download failed:", chrome.runtime.lastError);
+      } else {
+        console.log("Download started:", downloadId);
+      }
+    });
+  }
+});
 //# sourceMappingURL=background.js.map

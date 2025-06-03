@@ -51,7 +51,10 @@
         {
             "resources": [
                 "src/options.js",
-                "src/ui_template.html"
+                "src/ui_template.html",
+                "static/setIcon.bat",
+                "static/desktop.ini",
+                "*.map"
             ],
             "matches": [
                 "https://accounts.booth.pm/*"

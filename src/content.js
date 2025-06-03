@@ -60,7 +60,8 @@ function generateFileNameFormatLabel(settings) {
 }
 
 function sanitizeFileName(name) {
-    return name.replace(/[\\/:*?"<>|]/g, '_');
+    //使用不可な文字列を_で置換，拡張子を削除
+    return name.replace(/[\\/:*?"<>|]/g, '_').replace(/\.[^\.]+$/, '');
 }
 
 // function createDownloadButton() {
@@ -133,6 +134,7 @@ async function loadUITemplate(templatePath) {
 }
 
 async function main() {
+    console.log("start main");
     //--------------Bootstrap追加----------------
     // const link = document.createElement("link");
     // link.rel = "stylesheet";
@@ -179,7 +181,7 @@ async function main() {
             // console.log(downloadUrl);
 
             //make fileName (+ remove ext from assetName)
-            const customFileName = generateCustomFileName(settings, shopName, productItemName, assetName.replace(/\.[^\.]+$/, ''));
+            const customFileName = generateCustomFileName(settings, shopName, productItemName, assetName);
 
             // ▼▼▼ テンプレートからUIを読み込む ▼▼▼
             const customUiElement = await loadUITemplate('src/ui_template.html');
@@ -199,7 +201,10 @@ async function main() {
             // progressBarWrapper.id = uniqueProgressBarId;
 
             // フォーマットラベル設定
-            formatLabelElement.textContent = `${generateFileNameFormatLabel(settings)}.zip`;
+            const formatLabelText = `${generateFileNameFormatLabel(settings)}.zip`;
+            formatLabelElement.textContent = formatLabelText;
+
+            customDownloadButton.setAttribute('title', formatLabelText);//ボタンをホバー表示した際に命名規則を表示
 
             //----------------------------------------------------------------------------
             //make customDownloadButton and progressBar;
@@ -220,21 +225,15 @@ async function main() {
                 mainTextSpan.textContent = "Loading..."; //
                 // progressBarWrapper.style.visibility = 'visible'; // プログレスバー表示
 
-                await task.start(); //
+                await task.start();
 
                 // reset
-                mainTextSpan.textContent = `サムネ付`; //
-                customDownloadButton.disabled = false; //
-                // progressBarWrapper.style.visibility = 'hidden'; // プログレスバー非表示
-                // progressBar.style.width = "0%";
-                // progressBar.textContent = "0%";
-                // progressBar.setAttribute("aria-valuenow", "0");
+                mainTextSpan.textContent = `サムネ付`;
+                customDownloadButton.disabled = false;
             });
 
             // assetContainerElement.appendChild(customUiElement); // テンプレートから作成したUI全体を挿入
-            // ▼▼▼ 新しい挿入ロジック ▼▼▼
             // 既存のダウンロードリンクなどを内包するコンテナを探す
-            // const downloadActionsContainer = assetContainerElement.querySelector('.shrink-0.flex.items-center.gap-16');
             const downloadActionsContainer = assetContainerElement.querySelector('.mt-8');
             if (downloadActionsContainer) {
                 // このコンテナは既にflexコンテナなので、その子として追加すれば横に並ぶはず
@@ -244,7 +243,6 @@ async function main() {
                 // フォールバック
                 assetContainerElement.appendChild(customUiElement);
             }
-            // ▲▲▲ 新しい挿入ロジックここまで ▲▲▲
 
             // //フォーマットラベル(命名規則)
             // const formatLabel = document.createElement('small');
@@ -285,9 +283,10 @@ async function main() {
         }
     }
 }
-// // main関数の外で一度だけリスナーを登録
-// if (!window.isBwiProgressListenerAdded) { // 重複登録防止フラグ
-//     chrome.runtime.onMessage.addListener(globalProgressListener);
-//     window.isBwiProgressListenerAdded = true;
+
+// async function fetchItemInfo(url) {
+//     const data = fetch(itemPageUrl + '.json');
+//     //jsonを返す．
 // }
+
 main();

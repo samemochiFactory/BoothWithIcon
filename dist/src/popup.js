@@ -1,2 +1,36 @@
-document.addEventListener("DOMContentLoaded",async()=>{chrome.storage.local.get(["namingRules","includeIcon"],o=>{const e=o.namingRules||[];document.getElementById("namingRuleShopProduct").checked=e.includes("ショップ名"),document.getElementById("namingRuleProductName").checked=e.includes("商品名"),document.getElementById("namingRuleFileName").checked=e.includes("ファイル名")}),document.querySelectorAll('input[type="checkbox"]').forEach(o=>{o.addEventListener("change",()=>{const e=[];document.getElementById("namingRuleShopProduct").checked&&e.push("ショップ名"),document.getElementById("namingRuleProductName").checked&&e.push("商品名"),document.getElementById("namingRuleFileName").checked&&e.push("ファイル名"),chrome.storage.local.set({namingRules:e})})});const n=document.getElementById("selectedFolderName"),t=await g();n.textContent=t?`📁 ${t}`:"（未選択）"});document.getElementById("applySettingsBtn").addEventListener("click",()=>{chrome.tabs.query({active:!0,currentWindow:!0},n=>{var t;(t=n[0])!=null&&t.id&&chrome.tabs.reload(n[0].id)})});let a=null;document.addEventListener("DOMContentLoaded",()=>{const n=document.getElementById("folderPicker"),t=document.getElementById("selectedFolderName"),o=document.getElementById("fetchIconBtn");n.addEventListener("click",async()=>{try{a=await window.showDirectoryPicker(),t.textContent=`選択されたフォルダ: ${a.name}`,o.disabled=!1}catch(e){e.name==="AbortError"?(console.log("フォルダ選択がキャンセルされました"),console.log(e)):(console.error("フォルダ選択エラー:",e),t.textContent="❌ フォルダ選択に失敗しました",o.disabled=!0)}}),o.addEventListener("click",async()=>{const e=document.getElementById("shopUrl").value.trim();if(!e||!a){alert("URLとフォルダを選択してください");return}try{const r=await h(e),i=await w(r),s=await m("desktop.ini"),l=await m("setIcon.bat");await saveToFolder(a,"boothThumbnail.ico",i),await saveToFolder(a,"desktop.ini",new Blob([s],{type:"text/plain"})),await saveToFolder(a,"setIcon.bat",new Blob([l],{type:"text/plain"})),alert("フォルダに3ファイルを保存しました！")}catch(r){console.error("保存中にエラー:",r),alert("保存に失敗しました")}})});async function m(n){const t=chrome.runtime.getURL(`static/${n}`),o=await fetch(t);if(!o.ok)throw new Error(`${n} の読み込みに失敗しました`);return await o.text()}async function g(){const n=await chrome.storage.local.get("folderHandle");if(!n.folderHandle)return null;try{return(await window.showDirectoryPicker({startIn:n.folderHandle})).name}catch{return null}}async function h(n){return new Promise((t,o)=>{chrome.runtime.sendMessage({action:"fetchThumbnail",url:n},e=>{if(e&&e.data){const r=new Uint8Array(e.data),i=new Blob([r]);t(i)}else o(new Error("商品データの取得に失敗しました"))})})}async function w(n){try{const t=document.createElement("canvas"),o=t.getContext("2d"),e=256;t.width=e,t.height=e,await new Promise((l,d)=>{const c=new Image;c.onload=()=>{o.drawImage(c,0,0,e,e),URL.revokeObjectURL(c.src),l()},c.onerror=u=>d(new Error(`failed to load thumbnail : ${u}`)),c.src=URL.createObjectURL(n)});const r=await new Promise((l,d)=>{t.toBlob(c=>{c?l(c):d(new Error("failed to generate PNG blob"))},"image/png")});return await new PngIcoConverter().convertToBlobAsync([{png:r}])}catch(t){throw console.error("failed to converting .ico : ",t),t}}
+document.addEventListener("DOMContentLoaded", async () => {
+  chrome.storage.local.get(["namingRules", "includeIcon"], (result) => {
+    const namingRules = result.namingRules || [];
+    if (namingRules.length === 0) {
+      namingRules = ["ファイル名"];
+      chrome.storage.local.set({ namingRules });
+    }
+    document.getElementById("namingRuleShopProduct").checked = namingRules.includes("ショップ名");
+    document.getElementById("namingRuleProductName").checked = namingRules.includes("商品名");
+    document.getElementById("namingRuleFileName").checked = namingRules.includes("ファイル名");
+  });
+  document.querySelectorAll('input[type="checkbox"]').forEach((checkbox) => {
+    checkbox.addEventListener("change", () => {
+      const namingRules = [];
+      if (document.getElementById("namingRuleShopProduct").checked) namingRules.push("ショップ名");
+      if (document.getElementById("namingRuleProductName").checked) namingRules.push("商品名");
+      if (document.getElementById("namingRuleFileName").checked) namingRules.push("ファイル名");
+      if (namingRules.length === 0) {
+        namingRules.push("ファイル名");
+        document.getElementById("namingRuleFileName").checked = true;
+      }
+      chrome.storage.local.set({
+        namingRules
+      });
+    });
+  });
+});
+document.getElementById("applySettingsBtn").addEventListener("click", () => {
+  chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+    var _a;
+    if ((_a = tabs[0]) == null ? void 0 : _a.id) {
+      chrome.tabs.reload(tabs[0].id);
+    }
+  });
+});
 //# sourceMappingURL=popup.js.map

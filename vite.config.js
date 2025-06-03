@@ -56,6 +56,10 @@ export default defineConfig({
                 chunkFileNames: 'src/[name].js',
                 assetFileNames: 'src/[name][extname]',
             }
-        }
+        },
+        minify: false,
+        esbuild: {
+            drop: ['console'], // console.* の呼び出しを削除
+        },
     }
 });

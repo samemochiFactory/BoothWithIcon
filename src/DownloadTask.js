@@ -92,7 +92,9 @@ export class DownloadTask {
     async _loadStaticFileAsText(fileName) {
         try {
             // 'static/' フォルダからの相対パスでファイルを指定
-            const response = await fetch(`static/${fileName}`);
+            const fileURL = chrome.runtime.getURL(`static/${fileName}`);
+            // const response = await fetch(`static/${fileName}`);
+            const response = await fetch(fileURL);
 
             if (!response.ok) {
                 console.error(`Error fetching ${fileName}: ${response.status} ${response.statusText}`);
