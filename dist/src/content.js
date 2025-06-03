@@ -6257,11 +6257,6 @@ async function loadUITemplate(templatePath) {
   }
 }
 async function main() {
-  console.log("start main");
-  const link2 = document.createElement("link");
-  link2.rel = "stylesheet";
-  link2.href = "https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css";
-  document.head.appendChild(link2);
   const productItemElements = document.querySelectorAll(".mb-16");
   for (productItemElement of productItemElements) {
     let shopName = "unknownShopName";

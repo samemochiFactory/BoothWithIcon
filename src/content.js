@@ -134,17 +134,11 @@ async function loadUITemplate(templatePath) {
 }
 
 async function main() {
-    console.log("start main");
-    //--------------Bootstrap追加----------------
+    //--------------Bootstrap icon追加----------------
     // const link = document.createElement("link");
     // link.rel = "stylesheet";
-    // link.href = "https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css";
+    // link.href = "https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css";
     // document.head.appendChild(link);
-    //icon
-    const link2 = document.createElement("link");
-    link2.rel = "stylesheet";
-    link2.href = "https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css";
-    document.head.appendChild(link2);
     //-------------------------------------------
 
     //get item container (e.g. contains thumbnail,assets)

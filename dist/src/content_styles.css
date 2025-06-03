@@ -5,9 +5,20 @@
     --booth-extension-text-on-theme-color: #ffffff;
 }
 
+.bwi-main-text {
+    font-weight: bold;
+}
+
 /* 拡張機能のボタン共通スタイル */
 .bwi-btn {
-    display: inline-block;
+    /* display: inline-block; */
+    display: inline-flex;
+    /*add*/
+    flex-direction: column;
+    /*add*/
+    align-items: stretch;
+    /* add */
+    overflow: hidden;
     font-weight: 400;
     line-height: 1.5;
     color: #212529;
@@ -40,6 +51,50 @@
     border-color: var(--booth-extension-theme-color);
 }
 
+/* フォーマットラベル */
+.bwi-format-label {
+    /* display: block; */
+    /* 親がflex-direction:column なので不要かも */
+    color: #6c757d !important;
+    /* bwi-text-muted 相当 */
+    font-size: 0.65rem;
+    /* 少し小さめにする */
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    width: 100%;
+    text-align: center;
+    /* ラベルのテキストを中央揃え */
+
+    /* ▼▼▼ ホバーエフェクトのための初期状態 ▼▼▼ */
+    max-height: 0;
+    /* 通常時は高さを0にして隠す */
+    opacity: 0;
+    /* 透明にする */
+    margin-top: 0;
+    /* 通常時はマージンも0に (ホバー時に戻す) */
+    padding-top: 0;
+    /* 通常時はパディングも0に */
+    padding-bottom: 0;
+    box-sizing: border-box;
+    /* パディングやボーダーを含めた高さ計算 */
+    transition: max-height 0.3s ease-out, opacity 0.3s ease-out, margin-top 0.3s ease-out, padding-top 0.3s ease-out, padding-bottom 0.3s ease-out;
+}
+
+/* ボタンホバー時にフォーマットラベルを表示 */
+.bwi-download-button:hover .bwi-format-label {
+    max-height: 3em;
+    /* ★変更: 内容が収まる十分な高さを指定 (実際のテキスト量に応じて調整) */
+    opacity: 1;
+    /* 表示する */
+    margin-top: 0.25rem;
+    /* 元々 .bwi-mt-1 で指定していたマージン */
+    /* padding-top: 2px; */
+    /* 必要であれば微調整 */
+    /* padding-bottom: 2px; */
+    /* 必要であれば微調整 */
+}
+
 /* プログレスバーのスタイル */
 .bwi-progress {
     display: flex;
@@ -70,13 +125,10 @@
 /* テキストやラベルのスタイル */
 .bwi-text-muted {
     font-size: xx-small;
-    color: #6c757d !important;
+    /* color: #6c757d !important; */
+    color: #37393b !important;
 }
 
 .bwi-d-block {
     display: block !important;
-}
-
-.bwi-mt-1 {
-    margin-top: 0.25rem !important;
 }
