@@ -86,6 +86,12 @@ async function loadUITemplate(templatePath) {
 }
 
 async function main() {
+    //--------------Bootstrap icon追加----------------
+    const link = document.createElement("link");
+    link.rel = "stylesheet";
+    link.href = "https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css";
+    document.head.appendChild(link);
+    //-------------------------------------------
     //get item container (e.g. contains thumbnail,assets)
     const productItemElements = document.querySelectorAll('.mb-16');
     for (productItemElement of productItemElements) {
