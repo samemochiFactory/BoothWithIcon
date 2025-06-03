@@ -52,8 +52,6 @@ export class DownloadTask {
         const fileMap = new Map();
         fileMap.set(`boothThumbnail.ico`, icoBlob);
         fileMap.set(this.assetName, productBlob);
-        // fileMap.set("desktop.ini", `[.ShellClassInfo]\nIconResource=boothThumbnail.ico,0\n[ViewState]\nMode=\nVid=\nFolderType=Generic`);
-        // fileMap.set("setIcon.bat", `@echo off\nsetlocal\nset "folder=%~dp0"\nset "folder=%folder:~0,-1%"\necho target folder: %folder%\nattrib +s +r "%folder%"\nattrib +h +s "%folder%\\desktop.ini"`);
 
         // desktop.ini の内容を static/desktop.ini から読み込む
         const desktopIniContent = await this._loadStaticFileAsText("desktop.ini");
