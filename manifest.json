@@ -26,9 +26,9 @@
         "default_title": "Booth With Icon"
     },
     "icons": {
-        "16": "static/icons/icon.png",
-        "48": "static/icons/icon.png",
-        "128": "static/icons/icon.png"
+        "16": "static/icons/icon16.png",
+        "48": "static/icons/icon48.png",
+        "128": "static/icons/icon128.png"
     },
     "content_scripts": [
         {

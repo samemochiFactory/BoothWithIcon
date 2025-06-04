@@ -5,6 +5,10 @@
     --booth-extension-text-on-theme-color: #ffffff;
 }
 
+.bwi-custom-wrapper {
+    margin-left: 16px;
+}
+
 .bwi-main-text {
     font-weight: bold;
 }

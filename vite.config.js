@@ -10,7 +10,7 @@ export default defineConfig({
                     dest: ''
                 },
                 {
-                    src: 'static/icons/icon.png',
+                    src: 'static/icons/icon*.png',
                     dest: 'static/icons'
                 },
                 {
@@ -57,7 +57,7 @@ export default defineConfig({
                 assetFileNames: 'src/[name][extname]',
             }
         },
-        minify: false,
+        // minify: false,
         esbuild: {
             drop: ['console'], // console.* の呼び出しを削除
         },

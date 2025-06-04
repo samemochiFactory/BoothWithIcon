@@ -138,7 +138,7 @@ async function main() {
             const customDownloadButton = customUiElement.querySelector('.bwi-download-button');
             const mainTextSpan = customDownloadButton.querySelector('.bwi-main-text');
             const formatLabelElement = customDownloadButton.querySelector('.bwi-format-label');
-            const progressBarWrapper = customUiElement.querySelector('.bwi-progress-wrapper');
+            // const progressBarWrapper = customUiElement.querySelector('.bwi-progress-wrapper');
 
             // フォーマットラベル設定
             const formatLabelText = `${generateFileNameFormatLabel(settings)}.zip`;
@@ -151,25 +151,17 @@ async function main() {
                 downloadUrl,
                 thumbnailUrl,
                 assetName,
-                progressBarElement: progressBarWrapper
+                customUiElement: customUiElement
             });
 
             customDownloadButton.addEventListener('click', async () => { //
-                customDownloadButton.disabled = true; //
-                mainTextSpan.textContent = "Loading..."; //
-
                 await task.start();
-
-                // reset
-                mainTextSpan.textContent = `サムネ付`;
-                customDownloadButton.disabled = false;
             });
 
             // 既存のダウンロードリンクなどを内包するコンテナを探す
             const downloadActionsContainer = assetContainerElement.querySelector('.mt-8');
             if (downloadActionsContainer) {
                 // このコンテナは既にflexコンテナなので、その子として追加すれば横に並ぶはず
-                customUiElement.style.marginLeft = '16px'; // gap-16 に合わせてマージンを追加（またはCSSで）
                 downloadActionsContainer.appendChild(customUiElement);
             } else {
                 // フォールバック
