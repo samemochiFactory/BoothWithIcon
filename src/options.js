@@ -1,29 +1,3 @@
-// document.getElementById('selectFolderBtn').addEventListener('click', async () => {
-//     try {
-//         const folderHandle = await window.showDirectoryPicker();
-
-//         // 永続化トークンを保存（serialize 不可なので IDB APIでラップ必要）
-//         const granted = await verifyPermission(folderHandle);
-//         if (!granted) {
-//             alert("フォルダへのアクセス権限が許可されませんでした。");
-//             return;
-//         }
-
-//         // 保存
-//         await chrome.storage.local.set({ folderHandle });
-//         document.getElementById('folderResult').textContent = `✅ 選択済み: ${folderHandle.name}`;
-//     } catch (err) {
-//         console.error("フォルダ選択に失敗:", err);
-//         document.getElementById('folderResult').textContent = '❌ 選択失敗';
-//     }
-// });
-
-// async function verifyPermission(handle) {
-//     const options = { mode: 'readwrite' };
-//     if ((await handle.queryPermission(options)) === 'granted') return true;
-//     if ((await handle.requestPermission(options)) === 'granted') return true;
-//     return false;
-// }
 document.getElementById('selectFolderBtn').addEventListener('click', async () => {
     try {
         const folderHandle = await window.showDirectoryPicker();

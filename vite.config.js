@@ -58,8 +58,14 @@ export default defineConfig({
             }
         },
         // minify: false,
-        esbuild: {
-            drop: ['console'], // console.* の呼び出しを削除
-        },
+        // esbuild: {
+        //     drop: ['console'], // console.* の呼び出しを削除
+        // },
+        minify: 'terser',
+        terserOptions: {
+            compress: {
+                drop_console: true,
+            }
+        }
     }
 });
