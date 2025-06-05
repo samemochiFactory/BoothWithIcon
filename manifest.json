@@ -52,8 +52,7 @@
             "resources": [
                 "src/options.js",
                 "src/ui_template.html",
-                "static/setIcon.bat",
-                "static/desktop.ini",
+                "static/*",
                 "*.map"
             ],
             "matches": [

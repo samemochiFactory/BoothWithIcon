@@ -22,6 +22,10 @@ export default defineConfig({
                     dest: 'static'
                 },
                 {
+                    src: 'static/BoothLink.url',
+                    dest: 'static'
+                },
+                {
                     src: 'src/popup.html',
                     dest: 'src'
                 },
@@ -62,10 +66,10 @@ export default defineConfig({
         //     drop: ['console'], // console.* の呼び出しを削除
         // },
         minify: 'terser',
-        terserOptions: {
-            compress: {
-                drop_console: true,
-            }
-        }
+        // terserOptions: {
+        //     compress: {
+        //         drop_console: true,
+        //     }
+        // }
     }
 });

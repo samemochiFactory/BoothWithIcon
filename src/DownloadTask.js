@@ -5,10 +5,11 @@ import { convertPngToIcon } from './FetchBlobModule';
 import { createZipArchive } from './FetchBlobModule';
 
 export class DownloadTask {
-    constructor({ customFileName, downloadUrl, thumbnailUrl, assetName, customUiElement }) {
+    constructor({ customFileName, downloadUrl, thumbnailUrl, itemPageUrl, assetName, customUiElement }) {
         this.customFileName = customFileName;
         this.downloadUrl = downloadUrl;
         this.thumbnailUrl = thumbnailUrl;
+        this.itemPageUrl = itemPageUrl ? itemPageUrl : "https://booth.pm/";
         this.assetName = assetName;
         this.customUiElement = customUiElement;
 
@@ -96,6 +97,7 @@ export class DownloadTask {
         const desktopIniContent = await this._loadStaticFileAsText("desktop.ini");
         // fileMap.set("desktop.ini", desktopIniContent !== null ? desktopIniContent : `[.ShellClassInfo]\nIconResource=boothThumbnail.ico,0\n[ViewState]\nMode=\nVid=\nFolderType=Generic`);
         if (desktopIniContent !== null) {
+            console.log("loaded desktop.ini from static/");
             fileMap.set("desktop.ini", desktopIniContent);
         } else {
             // ファイル読み込み失敗時の処理 (例: エラーログ、デフォルト値の使用、処理の中断など)
@@ -108,12 +110,25 @@ export class DownloadTask {
         const setIconBatContent = await this._loadStaticFileAsText("setIcon.bat");
         // fileMap.set("setIcon.bat", setIconBatContent !== null ? setIconBatContent : `@echo off\nsetlocal\nset "folder=%~dp0"\nset "folder=%folder:~0,-1%"\necho target folder: %folder%\nattrib +s +r "%folder%"\nattrib +h +s "%folder%\\desktop.ini"`);
         if (setIconBatContent !== null) {
+            console.log("loaded setIcon.bat from static/");
             fileMap.set("setIcon.bat", setIconBatContent);
         } else {
             // ファイル読み込み失敗時の処理
             console.warn("Warning: static/setIcon.bat could not be loaded. Check the file path and server configuration.");
             // 必要であれば、ここでフォールバックの値を設定することも可能です。
             fileMap.set("setIcon.bat", `@echo off\nsetlocal\nset "folder=%~dp0"\nset "folder=%folder:~0,-1%"\necho target folder: %folder%\nattrib +s +r "%folder%"\nattrib +h +s "%folder%\\desktop.ini"`);
+        }
+
+        //load BoothLink.url and include to zip
+        const itemPageLinkContent = await this._loadStaticFileAsText("BoothLink.url");
+        if (itemPageLinkContent !== null) {
+            console.log("loaded BoothLink.url from static/");
+            fileMap.set("BoothLink.url", itemPageLinkContent.replace(/^URL=https:\/\/.*$/m, `URL=${this.itemPageUrl}`));
+        } else {
+            // ファイル読み込み失敗時の処理
+            console.warn("Warning: static/setIcon.bat could not be loaded. Check the file path and server configuration.");
+            // 必要であれば、ここでフォールバックの値を設定することも可能です。
+            fileMap.set("BoothLink.url", `[{000214A0-0000-0000-C000-000000000046}]\nProp3=19,11\n[InternetShortcut]\nIDList=\nURL=${this.itemPageUrl}\n`);
         }
 
         const zipBlob = await createZipArchive(fileMap);

@@ -1,6 +1,6 @@
 document.addEventListener('DOMContentLoaded', async () => {
     // 設定を読み込む
-    chrome.storage.local.get(['namingRules', 'includeIcon'], (result) => {
+    chrome.storage.local.get(['namingRules'], (result) => {
         const namingRules = result.namingRules || [];
         if (namingRules.length === 0) {
             namingRules = ['ファイル名']; // デフォルトで「ファイル名」を設定

@@ -10,14 +10,16 @@ import { DownloadTask } from './DownloadTask';
 //     return itemUrl
 // }
 
-async function fetchItemInfo(item_url) {
+async function fetchItemInfo(itemPageUrl) {
     return new Promise((resolve, reject) => {
         chrome.runtime.sendMessage(
             {
-                action: "fetchItemInfo", url: item_url
+                action: "fetchItemInfo", url: itemPageUrl
             }, (response) => {
                 if (response && response.data) {
                     resolve(response.data);
+                } else if (response && response.error) {
+                    reject(new Error(response.error));
                 } else {
                     reject(new Error("商品データの取得に失敗しました"));
                     //ここ，商品ページが消えてると404返る
@@ -25,6 +27,7 @@ async function fetchItemInfo(item_url) {
             });
     });
 }
+
 // ファイル名生成関数
 function generateCustomFileName(settings, shopName, productItemName, assetName) {
     const parts = [];
@@ -86,12 +89,14 @@ async function loadUITemplate(templatePath) {
 }
 
 async function main() {
-    //--------------Bootstrap icon追加----------------
+    //Bootstrap icon追加
+    //=====================================================
     const link = document.createElement("link");
     link.rel = "stylesheet";
     link.href = "https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css";
     document.head.appendChild(link);
-    //-------------------------------------------
+    //=====================================================
+
     //get item container (e.g. contains thumbnail,assets)
     const productItemElements = document.querySelectorAll('.mb-16');
     for (productItemElement of productItemElements) {
@@ -109,6 +114,30 @@ async function main() {
         //get title
         const itemNameElement = productItemElement.querySelector('.text-text-default');
         productItemName = itemNameElement.textContent.trim().replace(/\s+/g, ' ');
+
+        //get item page url
+        //=====================================================
+        let itemPageUrl = '';
+        const itemPageUrlElement = productItemElement.querySelector('a[href*="/items/"]');
+        if (itemPageUrlElement) {
+            // 念のため、より厳密な正規表現で最終確認（任意）
+            // if (itemPageUrlElement.href.match(/^https:\/\/[\w-]+\.booth\.pm(\/ja)?\/items\/\d+$/)) {
+            if (itemPageUrlElement.href.match(/^https:\/\/booth\.pm\/[^/]+\/items\/\d+$/)) {
+                itemPageUrl = itemPageUrlElement.href;
+            }
+        }
+        // 取得できたか確認
+        if (itemPageUrl) {
+            console.log("取得した商品ページURL:", itemPageUrl);
+        } else {
+            console.warn("商品ページのURLが見つかりませんでした。");
+        }
+        //=====================================================
+        //itemPage.jsonを取得する(今のとこ不要．ページロード時に一気に動かすとサーバーに負荷をかけるので，ボタンを押した時のみにする．)
+        // if (itemPageUrl) {
+        //     const itemInfo = await fetchItemInfo(itemPageUrl + '.json');
+        //     console.log(itemInfo)
+        // }
 
         //load naming rule from storage
         const settings = await new Promise((resolve) => {
@@ -136,7 +165,7 @@ async function main() {
             }
             // テンプレート内の各要素を取得
             const customDownloadButton = customUiElement.querySelector('.bwi-download-button');
-            const mainTextSpan = customDownloadButton.querySelector('.bwi-main-text');
+            // const mainTextSpan = customDownloadButton.querySelector('.bwi-main-text');
             const formatLabelElement = customDownloadButton.querySelector('.bwi-format-label');
             // const progressBarWrapper = customUiElement.querySelector('.bwi-progress-wrapper');
 
@@ -147,10 +176,11 @@ async function main() {
             customDownloadButton.setAttribute('title', formatLabelText);//ボタンをホバー表示した際に命名規則を表示
 
             const task = new DownloadTask({
-                customFileName,
-                downloadUrl,
-                thumbnailUrl,
-                assetName,
+                customFileName: customFileName,
+                downloadUrl: downloadUrl,
+                thumbnailUrl: thumbnailUrl,
+                itemPageUrl: itemPageUrl,
+                assetName: assetName,
                 customUiElement: customUiElement
             });
 
