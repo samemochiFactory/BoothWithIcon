@@ -13,6 +13,7 @@ export default defineConfig({
                     src: 'static/icons/icon*.png',
                     dest: 'static/icons'
                 },
+                // setting resource
                 {
                     src: 'static/desktop.ini',
                     dest: 'static'
@@ -25,19 +26,31 @@ export default defineConfig({
                     src: 'static/BoothLink.url',
                     dest: 'static'
                 },
+                // popup
                 {
                     src: 'src/popup.html',
                     dest: 'src'
                 },
                 {
+                    src: 'src/popup_styles.css',
+                    dest: 'src'
+                },
+                // options
+                {
                     src: 'src/options.html',
                     dest: 'src'
                 },
                 {
-                    src: 'src/content_styles.css',
+                    src: 'src/options_styles.css',
                     dest: 'src'
-                }, {
+                },
+                // customUI
+                {
                     src: 'src/ui_template.html',
+                    dest: 'src'
+                },
+                {
+                    src: 'src/content_styles.css',
                     dest: 'src'
                 }
             ]
@@ -62,9 +75,6 @@ export default defineConfig({
             }
         },
         // minify: false,
-        // esbuild: {
-        //     drop: ['console'], // console.* の呼び出しを削除
-        // },
         minify: 'terser',
         // terserOptions: {
         //     compress: {
