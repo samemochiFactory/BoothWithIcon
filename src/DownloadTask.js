@@ -89,14 +89,6 @@ export class DownloadTask {
         const icoBlob = await convertPngToIcon(thumbnailBlob);
         if (!icoBlob) throw new Error("Failed to convert thumbnail to icon.");
 
-        //load setting
-        let saveAs = true;
-        const saveSettings = await new Promise((resolve) => {
-            chrome.storage.local.get(['enableSaveAs'], resolve);
-        });
-        saveAs = saveSettings.enableSaveAs;
-        console.log(`savingSettings : enableSaveAs = ${saveAs}`);
-
         const fileMap = new Map();
         fileMap.set(`boothThumbnail.ico`, icoBlob);
         fileMap.set(`${this.assetName}.${ext}`, productBlob);
@@ -127,16 +119,24 @@ export class DownloadTask {
             fileMap.set("setIcon.bat", `@echo off\nsetlocal\nset "folder=%~dp0"\nset "folder=%folder:~0,-1%"\necho target folder: %folder%\nattrib +s +r "%folder%"\nattrib +h +s "%folder%\\desktop.ini"`);
         }
 
-        //load BoothLink.url and include to zip
-        const itemPageLinkContent = await this._loadStaticFileAsText("BoothLink.url");
-        if (itemPageLinkContent !== null) {
-            console.log("loaded BoothLink.url from static/");
-            fileMap.set("BoothLink.url", itemPageLinkContent.replace(/^URL=https:\/\/.*$/m, `URL=${this.itemPageUrl}`));
-        } else {
-            // ファイル読み込み失敗時の処理
-            console.warn("Warning: static/setIcon.bat could not be loaded. Check the file path and server configuration.");
-            // 必要であれば、ここでフォールバックの値を設定することも可能です。
-            fileMap.set("BoothLink.url", `[{000214A0-0000-0000-C000-000000000046}]\nProp3=19,11\n[InternetShortcut]\nIDList=\nURL=${this.itemPageUrl}\n`);
+        // 設定を読み込む
+        //商品ページへのショートカットを含めるか
+        const result = await chrome.storage.local.get(['includeItemPageLink']);// chrome.storage.local.get が返すPromiseの結果をawaitで待つ
+        // resultオブジェクトから値を取り出す
+        const includeItemPageLink = result.includeItemPageLink !== false;
+        console.log(`includeItemPageLink = ${includeItemPageLink}`);
+        if (includeItemPageLink) {
+            //load BoothLink.url and include to zip
+            const itemPageLinkContent = await this._loadStaticFileAsText("BoothLink.url");
+            if (itemPageLinkContent !== null) {
+                console.log("loaded BoothLink.url from static/");
+                fileMap.set("BoothLink.url", itemPageLinkContent.replace(/^URL=https:\/\/.*$/m, `URL=${this.itemPageUrl}`));
+            } else {
+                // ファイル読み込み失敗時の処理
+                console.warn("Warning: static/setIcon.bat could not be loaded. Check the file path and server configuration.");
+                // 必要であれば、ここでフォールバックの値を設定することも可能です。
+                fileMap.set("BoothLink.url", `[{000214A0-0000-0000-C000-000000000046}]\nProp3=19,11\n[InternetShortcut]\nIDList=\nURL=${this.itemPageUrl}\nIconIndex=0\nHotKey=0\nIconFile=boothThumbnail.ico`);
+            }
         }
 
         const zipBlob = await createZipArchive(fileMap);
@@ -145,7 +145,6 @@ export class DownloadTask {
             action: 'downloadZip',
             blobUrl: URL.createObjectURL(zipBlob),
             filename: this.customFileName + '.zip',
-            enableSaveAs: saveAs
         });
     }
     /**

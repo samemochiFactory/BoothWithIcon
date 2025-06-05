@@ -5,10 +5,10 @@ document.addEventListener('DOMContentLoaded', async () => {
         // 設定を読み込む
         chrome.storage.local.get(['namingRules'], (result) => {
             const namingRules = result.namingRules || [];
-            if (namingRules.length === 0) {
-                namingRules = ['ファイル名']; // デフォルトで「ファイル名」を設定
-                chrome.storage.local.set({ namingRules });// このデフォルト値をストレージにも保存する（任意だが、次回読み込み時の一貫性のため推奨）
-            }
+            // if (namingRules.length === 0) {
+            //     namingRules = ['ファイル名']; // デフォルトで「ファイル名」を設定
+            //     chrome.storage.local.set({ namingRules });// このデフォルト値をストレージにも保存する（任意だが、次回読み込み時の一貫性のため推奨）
+            // }
             // UIに反映
             document.getElementById('namingRuleShopProduct').checked = namingRules.includes('ショップ名');
             document.getElementById('namingRuleProductName').checked = namingRules.includes('商品名');
@@ -19,7 +19,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         // document.querySelectorAll('input[type="checkbox"]').forEach(checkbox => {
         namingRuleCheckboxes.forEach(checkbox => {
             checkbox.addEventListener('change', () => {
-                const namingRules = [];
+                let namingRules = [];
                 if (document.getElementById('namingRuleShopProduct').checked) namingRules.push('ショップ名');
                 if (document.getElementById('namingRuleProductName').checked) namingRules.push('商品名');
                 if (document.getElementById('namingRuleFileName').checked) namingRules.push('ファイル名');
@@ -33,17 +33,17 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
     // --- options.htmlでのみ実行される処理 ---
     if (document.body.id === 'options-page') {
-        const enableSaveAsCheckbox = document.getElementById('enableSaveAs');
+        const includeItemPageLinkCheckbox = document.getElementById('includeItemPageLink');
 
-        // 「名前を付けて保存」設定を読み込む
-        chrome.storage.local.get(['enableSaveAs'], (result) => {
+        // 設定を読み込む
+        chrome.storage.local.get(['includeItemPageLink'], (result) => {
             // 未設定(undefined)の場合はtrue（チェックを入れる）として扱う
-            enableSaveAsCheckbox.checked = result.enableSaveAs !== false;
+            includeItemPageLinkCheckbox.checked = result.includeItemPageLink !== false;
         });
 
         // 変更イベントで保存
-        enableSaveAsCheckbox.addEventListener('change', () => {
-            chrome.storage.local.set({ enableSaveAs: enableSaveAsCheckbox.checked });
+        includeItemPageLinkCheckbox.addEventListener('change', () => {
+            chrome.storage.local.set({ includeItemPageLink: includeItemPageLinkCheckbox.checked });
         });
     }
     // --- 共通の処理 ---

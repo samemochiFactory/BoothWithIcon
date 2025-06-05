@@ -97,6 +97,32 @@ async function main() {
     document.head.appendChild(link);
     //=====================================================
 
+    // 設定を読み込む
+    //=====================================================
+    //命名規則
+    // chrome.storage.local.get(['namingRules'], (result) => {
+    //     let namingRules = result.namingRules || [];
+    //     if (namingRules.length === 0) {
+    //         console.log("namingRules is undefined");
+    //         namingRules = ['ファイル名']; // デフォルトで「ファイル名」を設定
+    //         chrome.storage.local.set({ namingRules });// このデフォルト値をストレージにも保存する（任意だが、次回読み込み時の一貫性のため推奨）
+    //     }
+    // });
+    // //再読み込み
+    const settings = await new Promise((resolve) => {
+        chrome.storage.local.get(['namingRules'], resolve);
+    });
+    console.log(`namingRules is loaded > ${settings.namingRules}`);
+    // //商品ページへのショートカットを含めるか
+    // const optionSettingsResult = await new Promise((resolve) => {
+    //     chrome.storage.local.get(['includeItemPageLink'], resolve);
+    // });
+    // const includeItemPageLink = optionSettingsResult.includeItemPageLink !== false;
+    // if (includeItemPageLink === undefined) {
+    //     chrome.storage.local.set({ includeItemPageLink: true });// 未設定(undefined)の場合はデフォルト値(true)を設定
+    // }
+    //=====================================================
+
     //get item container (e.g. contains thumbnail,assets)
     const productItemElements = document.querySelectorAll('.mb-16');
     for (productItemElement of productItemElements) {
@@ -138,11 +164,6 @@ async function main() {
         //     const itemInfo = await fetchItemInfo(itemPageUrl + '.json');
         //     console.log(itemInfo)
         // }
-
-        //load naming rule from storage
-        const settings = await new Promise((resolve) => {
-            chrome.storage.local.get(['namingRules'], resolve);
-        });
 
         //get assets containers (e.g. contains hoge.zip,downloadlink)
         const assetContainerElements = productItemElement.querySelector('.mt-16').children;

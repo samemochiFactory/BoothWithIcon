@@ -40,10 +40,10 @@ export default defineConfig({
                     src: 'src/options.html',
                     dest: 'src'
                 },
-                {
-                    src: 'src/options_styles.css',
-                    dest: 'src'
-                },
+                // {
+                //     src: 'src/options_styles.css',
+                //     dest: 'src'
+                // },
                 // customUI
                 {
                     src: 'src/ui_template.html',

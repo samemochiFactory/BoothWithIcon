@@ -104,8 +104,7 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
         chrome.downloads.download({
             url: msg.blobUrl,
             filename: msg.filename,
-            // saveAs: true
-            saveAs: msg.enableSaveAs//urlがbrobUrlなので必ずTrueになってしまう
+            saveAs: true
         }, downloadId => {
             if (chrome.runtime.lastError) {
                 console.error('Download failed:', chrome.runtime.lastError);
@@ -113,5 +112,17 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
                 console.log('Download started:', downloadId);
             }
         });
+    }
+});
+// 拡張機能がインストールされたとき、または更新されたときに一度だけ実行される
+chrome.runtime.onInstalled.addListener((details) => {
+    // インストール時のみ実行
+    if (details.reason === 'install') {
+        // デフォルト値をストレージに保存
+        chrome.storage.local.set({
+            namingRules: ['ファイル名'], // デフォルトの命名規則
+            includeItemPageLink: true      // デフォルトのリンク設定
+        });
+        console.log('Default settings have been initialized.');
     }
 });
