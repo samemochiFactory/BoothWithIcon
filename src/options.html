@@ -3,91 +3,41 @@
 
 <head>
     <meta charset="UTF-8" />
-    <title>ローカルアセットへ適用</title>
-    <!-- Bootstrap 5 -->
+    <title>Settings</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <!-- Bootstrap Icons CDN -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
-    <!--CSS -->
-    <link rel="stylesheet" href="options_styles.css" type="text/css">
-    <!-- Font Awesome CDN -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="popup_styles.css" type="text/css">
 </head>
 
-<body>
-    <div class="container-fluid">
-        <div class="row">
-            <div class="col-12">
-                <div class="mb-1">
-                    <a href="popup.html" class="btn btn-outline-success text-center" title="戻る">
-                        <i class="bi bi-arrow-left-square"></i>
-                        戻る
-                    </a>
+<body class="pt-3 px-3 pb-2 container-fluid" style="width: 320px;">
+    <div class="row">
+        <div class="col-12">
+            <div class="mb-2">
+                <a href="popup.html" class="btn btn-sm btn-outline-secondary">
+                    <i class="bi bi-arrow-left-square-fill"></i>
+                    <!-- 戻る -->
+                </a>
+            </div>
+            <div class="settings-section">
+                <div class="mb-2 text-center">
+                    <h6>
+                        <i class="bi bi-ui-checks-grid" style="color: #6c757d;"></i>
+                        <b>保存設定</b>
+                    </h6>
                 </div>
-
-                <!-- フォルダ選択セクション -->
-                <div class="settings-section">
-                    <div class="text-center">
-                        <h6 class="mb-3">
-                            <!-- <i class="fas fa-folder" style="color: #ffc107;"></i> -->
-                            <b>保存設定</b>
-                        </h6>
-                    </div>
-                    <!-- zip保存時に「名前を付けて保存」を有効にするか設定 -->
-                    <div class="form-check form-check-inline">
-                        <input class="form-check-input" type="checkbox" id="enableSaveAs" value="ファイル名">
-                        <label class="form-check-label" for="namingRuleFileName">保存時にダイアログを表示</label>
-                        <p class="text-muted mb-4">
-                            zip保存時に「名前を付けて保存」を有効にする
-                        </p>
-                    </div>
-
-
-                    <!-- <div class="folder-display" id="folderDisplay">
-                        <div>
-                            <i class="fas fa-folder-open fa-3x text-muted mb-3"></i>
-                            <div id="folderResult" class="status-text">未選択</div>
-                            <p class="text-muted mb-0 mt-2">下のボタンでフォルダを選択してください</p>
-                        </div>
-                    </div> -->
-
-                    <!-- <div class="text-center">
-                        <button class="btn btn-primary btn-large" id="selectFolderBtn">
-                            <i class="fas fa-folder-plus"></i>
-                            フォルダを選択
-                        </button>
-                    </div> -->
-                    <div class="text-center">
-                        <button class="btn btn-booth-primary btn-sm" id="applySettingsBtn">
-                            <i class="bi bi-arrow-clockwise"></i>
-                            <b>適用(F5)</b>
-                        </button>
-                    </div>
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" id="enableSaveAs">
+                    <label class="form-check-label" for="enableSaveAs">「名前を付けて保存」ダイアログを表示</label>
+                    <!-- <p class="text-muted small mt-1">
+                        zip保存時に「名前を付けて保存」を有効にします。
+                    </p> -->
                 </div>
-
-
-                <!-- URL入力・実行セクション -->
-                <!-- <div class="settings-section">
-                    <h4 class="mb-3">
-                        <i class="fas fa-download" style="color: #17a2b8;"></i>
-                        アイコン取得・設定
-                    </h4>
-                    <p class="text-muted mb-4">
-                        商品ページのURLを入力してフォルダにアイコンを設定します。
-                    </p>
-
-                    <div class="mb-3">
-                        <label for="shopUrl" class="form-label">商品ページURL</label>
-                        <input type="url" class="form-control form-control-lg" id="shopUrl"
-                            placeholder="https://booth.pm/items/xxxx">
-                    </div>
-
-                    <div class="text-center">
-                        <button class="btn btn-success btn-large" id="executeBtn" disabled>
-                            <i class="fas fa-magic"></i>
-                            フォルダにアイコンを設定
-                        </button>
-                    </div>
+                <!-- <div class="text-center mt-3">
+                    <button class="btn btn-booth-primary btn-sm" id="applySettingsBtn">
+                        <i class="bi bi-arrow-clockwise"></i>
+                        <b>適用(F5)</b>
+                    </button>
                 </div> -->
             </div>
         </div>
