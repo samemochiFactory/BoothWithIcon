@@ -89,6 +89,14 @@ export class DownloadTask {
         const icoBlob = await convertPngToIcon(thumbnailBlob);
         if (!icoBlob) throw new Error("Failed to convert thumbnail to icon.");
 
+        //load setting
+        let saveAs = true;
+        const saveSettings = await new Promise((resolve) => {
+            chrome.storage.local.get(['enableSaveAs'], resolve);
+        });
+        saveAs = saveSettings.enableSaveAs;
+        console.log(`savingSettings : enableSaveAs = ${saveAs}`);
+
         const fileMap = new Map();
         fileMap.set(`boothThumbnail.ico`, icoBlob);
         fileMap.set(`${this.assetName}.${ext}`, productBlob);
@@ -136,7 +144,8 @@ export class DownloadTask {
         chrome.runtime.sendMessage({
             action: 'downloadZip',
             blobUrl: URL.createObjectURL(zipBlob),
-            filename: this.customFileName + '.zip'
+            filename: this.customFileName + '.zip',
+            enableSaveAs: saveAs
         });
     }
     /**

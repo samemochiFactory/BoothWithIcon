@@ -100,10 +100,12 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
         return true; // 非同期応答のためにtrueを返す
     }
     if (msg.action === 'downloadZip') {
+
         chrome.downloads.download({
             url: msg.blobUrl,
             filename: msg.filename,
-            saveAs: true
+            // saveAs: true
+            saveAs: msg.enableSaveAs//urlがbrobUrlなので必ずTrueになってしまう
         }, downloadId => {
             if (chrome.runtime.lastError) {
                 console.error('Download failed:', chrome.runtime.lastError);
