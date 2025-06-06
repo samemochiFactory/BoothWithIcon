@@ -1,5 +1,6 @@
 @echo off
 setlocal
+powershell -Command "Get-ChildItem -Path '%~dp0' -Recurse | Unblock-File"
 set "folder=%~dp0"
 set "folder=%folder:~0,-1%"
 echo target folder: %folder%

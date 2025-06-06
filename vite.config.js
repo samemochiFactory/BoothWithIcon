@@ -14,16 +14,28 @@ export default defineConfig({
                     dest: 'static/icons'
                 },
                 // setting resource
+                // {
+                //     src: 'static/desktop.ini',
+                //     dest: 'static'
+                // },
+                // {
+                //     src: 'static/setIcon.bat',
+                //     dest: 'static'
+                // },
+                // {
+                //     src: 'static/BoothLink.url',
+                //     dest: 'static'
+                // },
                 {
-                    src: 'static/desktop.ini',
+                    src: 'static/desktop-ini.txt',
                     dest: 'static'
                 },
                 {
-                    src: 'static/setIcon.bat',
+                    src: 'static/setIcon-bat.txt',
                     dest: 'static'
                 },
                 {
-                    src: 'static/BoothLink.url',
+                    src: 'static/BoothLink-url.txt',
                     dest: 'static'
                 },
                 // popup
@@ -76,10 +88,10 @@ export default defineConfig({
         },
         // minify: false,
         minify: 'terser',
-        terserOptions: {
-            compress: {
-                drop_console: true,
-            }
-        }
+        // terserOptions: {
+        //     compress: {
+        //         drop_console: true,
+        //     }
+        // }
     }
 });
