@@ -296,7 +296,8 @@ async function main() {
 
     // URLに応じて処理を分岐
     const currentUrl = window.location.href;
-    const isItemPage = currentUrl.match(/https:\/\/booth\.pm\/[^/]+\/items\/\d+/);
+    // const isItemPage = currentUrl.match(/https:\/\/booth\.pm\/[^/]+\/items\/\d+/);
+    const isItemPage = currentUrl.match(/^https:\/\/(?:[a-zA-Z0-9-]+\.)?booth\.pm\/.*items\/\d+/);
     console.log(`isItemPage:${isItemPage}`);
     console.log(`currentUrl:${currentUrl}`);
     if (currentUrl.includes('accounts.booth.pm/library')) {

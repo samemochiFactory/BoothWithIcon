@@ -34,7 +34,8 @@
         {
             "matches": [
                 "https://accounts.booth.pm/library*",
-                "https://booth.pm/*/items/*"
+                "https://booth.pm/*/items/*",
+                "https://*.booth.pm/items/*"
             ],
             "js": [
                 "src/content.js"
@@ -58,7 +59,8 @@
             ],
             "matches": [
                 "https://accounts.booth.pm/*",
-                "https://booth.pm/*"
+                "https://booth.pm/*",
+                "https://*/*"
             ]
         }
     ]
