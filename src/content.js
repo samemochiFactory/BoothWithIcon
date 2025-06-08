@@ -142,7 +142,6 @@ async function processItemPage(settings) {
     const shopName = shopNameElement ? shopNameElement.textContent.trim() : "unknownShopName";
     const itemPageUrl = window.location.href;
 
-    // ★★★ ここから修正 ★★★
     // --- サムネイルURLの取得 (動画スライドを考慮) ---
     let thumbnailUrl = '';
     const firstSlide = document.querySelector('.primary-image-area .slick-slide[data-slick-index="0"]');
@@ -166,7 +165,6 @@ async function processItemPage(settings) {
         const fallbackImage = document.querySelector('.market-item-detail-item-image');
         thumbnailUrl = fallbackImage?.dataset.origin || fallbackImage?.src || '';
     }
-    // ★★★ ここまで修正 ★★★
 
     // --- 無料ダウンロード可能な全項目を処理 ---
     const variationItems = document.querySelectorAll('.variation-item');
@@ -180,30 +178,46 @@ async function processItemPage(settings) {
             continue;
         }
 
-        const assetName = freeDownloadButton.getAttribute('title') || "unknownAsset";
-        const downloadUrl = freeDownloadButton.href;
+        // ★★★ 修正箇所: querySelectorAllを使い、item内の全ての無料ダウンロードボタンを取得 ★★★
+        const freeDownloadButtons = item.querySelectorAll('.variation-cart a.add-cart.full-length');
 
-        const customFileName = generateCustomFileName(settings, shopName, productItemName, assetName);
-        const customUiElement = await loadUITemplate('src/item_page_ui_template.html');
-        if (!customUiElement) continue;
+        // ★★★ 修正箇所: 取得した各ボタンに対して処理を行うループを追加 ★★★
+        for (const freeDownloadButton of freeDownloadButtons) {
+            const assetName = freeDownloadButton.getAttribute('title') || "unknownAsset";
+            const downloadUrl = freeDownloadButton.href;
 
-        const customDownloadButton = customUiElement.querySelector('.bwi-download-button');
-        const formatLabelElement = customUiElement.querySelector('.bwi-format-label');
-        const formatLabelText = `${generateFileNameFormatLabel(settings)}.zip`;
-        formatLabelElement.textContent = formatLabelText;
-        customDownloadButton.setAttribute('title', formatLabelText);
+            const customFileName = generateCustomFileName(settings, shopName, productItemName, assetName);
+            const customUiElement = await loadUITemplate('src/item_page_ui_template.html');
+            if (!customUiElement) continue;
 
-        const task = new DownloadTask({
-            customFileName,
-            downloadUrl,
-            thumbnailUrl,
-            itemPageUrl,
-            assetName,
-            customUiElement
-        });
+            const customDownloadButton = customUiElement.querySelector('.bwi-download-button');
+            const productNameLabel = customUiElement.querySelector('.bwi-product-name');
+            const formatLabelElement = customUiElement.querySelector('.bwi-format-label');
 
-        customDownloadButton.addEventListener('click', () => task.start());
-        buttonsContainer.appendChild(customUiElement);
+            // 新しく追加した要素に「商品名」を設定
+            if (productNameLabel) {
+                productNameLabel.textContent = assetName; // ここではアセット名（ファイル名）を表示
+            }
+
+            // フォーマットラベルには命名規則の形式を表示
+            if (formatLabelElement) {
+                const formatLabelText = `( ${generateFileNameFormatLabel(settings)}.zip )`;
+                formatLabelElement.textContent = formatLabelText;
+            }
+            customDownloadButton.setAttribute('title', `保存名: ${customFileName}.zip`);
+
+            const task = new DownloadTask({
+                customFileName,
+                downloadUrl,
+                thumbnailUrl,
+                itemPageUrl,
+                assetName,
+                customUiElement
+            });
+
+            customDownloadButton.addEventListener('click', () => task.start());
+            buttonsContainer.appendChild(customUiElement);
+        }
     }
 
     // --- 生成したカスタムボタン群をページに挿入 ---

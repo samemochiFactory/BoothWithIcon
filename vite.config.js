@@ -92,10 +92,10 @@ export default defineConfig({
         },
         // minify: false,
         minify: 'terser',
-        // terserOptions: {
-        //     compress: {
-        //         drop_console: true,
-        //     }
-        // }
+        terserOptions: {
+            compress: {
+                drop_console: true,
+            }
+        }
     }
 });
