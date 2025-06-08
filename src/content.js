@@ -1,32 +1,22 @@
 import { DownloadTask } from './DownloadTask';
 
-// function getItemUrl(itemUrlElement) {
-//     const itemUrl = itemUrlElement ? itemUrlElement.href : 'Unknown';
-//     if (itemUrlElement) {
-//         // console.log('itemUrl:', itemUrl);
-//     } else {
-//         console.log('failed to get item url');
-//     }
-//     return itemUrl
+// async function fetchItemInfo(itemPageUrl) {
+//     return new Promise((resolve, reject) => {
+//         chrome.runtime.sendMessage(
+//             {
+//                 action: "fetchItemInfo", url: itemPageUrl
+//             }, (response) => {
+//                 if (response && response.data) {
+//                     resolve(response.data);
+//                 } else if (response && response.error) {
+//                     reject(new Error(response.error));
+//                 } else {
+//                     reject(new Error("商品データの取得に失敗しました"));
+//                     //ここ，商品ページが消えてると404返る
+//                 }
+//             });
+//     });
 // }
-
-async function fetchItemInfo(itemPageUrl) {
-    return new Promise((resolve, reject) => {
-        chrome.runtime.sendMessage(
-            {
-                action: "fetchItemInfo", url: itemPageUrl
-            }, (response) => {
-                if (response && response.data) {
-                    resolve(response.data);
-                } else if (response && response.error) {
-                    reject(new Error(response.error));
-                } else {
-                    reject(new Error("商品データの取得に失敗しました"));
-                    //ここ，商品ページが消えてると404返る
-                }
-            });
-    });
-}
 
 // ファイル名生成関数
 function generateCustomFileName(settings, shopName, productItemName, assetName) {
@@ -88,112 +78,200 @@ async function loadUITemplate(templatePath) {
     }
 }
 
-async function main() {
-    //Bootstrap icon追加
-    //=====================================================
-    const link = document.createElement("link");
-    link.rel = "stylesheet";
-    link.href = "https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css";
-    document.head.appendChild(link);
-    //=====================================================
+// async function processItemPage(settings) {
+//     console.log("商品ページを処理します。");
 
-    // 設定を読み込む
-    //=====================================================
-    //命名規則
-    // chrome.storage.local.get(['namingRules'], (result) => {
-    //     let namingRules = result.namingRules || [];
-    //     if (namingRules.length === 0) {
-    //         console.log("namingRules is undefined");
-    //         namingRules = ['ファイル名']; // デフォルトで「ファイル名」を設定
-    //         chrome.storage.local.set({ namingRules });// このデフォルト値をストレージにも保存する（任意だが、次回読み込み時の一貫性のため推奨）
-    //     }
-    // });
-    // //再読み込み
-    const settings = await new Promise((resolve) => {
-        chrome.storage.local.get(['namingRules'], resolve);
-    });
-    console.log(`namingRules is loaded > ${settings.namingRules}`);
-    // //商品ページへのショートカットを含めるか
-    // const optionSettingsResult = await new Promise((resolve) => {
-    //     chrome.storage.local.get(['includeItemPageLink'], resolve);
-    // });
-    // const includeItemPageLink = optionSettingsResult.includeItemPageLink !== false;
-    // if (includeItemPageLink === undefined) {
-    //     chrome.storage.local.set({ includeItemPageLink: true });// 未設定(undefined)の場合はデフォルト値(true)を設定
-    // }
-    //=====================================================
+//     // 無料商品か判定（「無料ダウンロード」ボタンの存在でチェック）
+//     const freeDownloadButton = document.querySelector('.variation-cart a.add-cart.full-length');
+//     if (!freeDownloadButton) {
+//         console.log("無料ダウンロード対象の商品ではありません。");
+//         return;
+//     }
 
-    //get item container (e.g. contains thumbnail,assets)
-    const productItemElements = document.querySelectorAll('.mb-16');
+//     // --- 情報取得 ---
+//     const productItemName = document.querySelector('header h2.font-bold')?.textContent.trim() || "unknownItemName";
+//     const shopNameElement = document.querySelector('header a[href*=".booth.pm/"] span');
+//     const shopName = shopNameElement ? shopNameElement.textContent.trim() : "unknownShopName";
+
+//     // サムネイルは最初の1枚を使用
+//     const firstImage = document.querySelector('img.market-item-detail-item-image');
+//     const thumbnailUrl = firstImage?.dataset.origin || firstImage?.src || '';
+
+//     const assetName = freeDownloadButton.getAttribute('title') || "unknownAsset";
+//     const downloadUrl = freeDownloadButton.href;
+//     const itemPageUrl = window.location.href;
+
+//     // --- カスタムUIの生成と挿入 ---
+//     const customFileName = generateCustomFileName(settings, shopName, productItemName, assetName);
+//     const customUiElement = await loadUITemplate('src/item_page_ui_template.html');
+//     if (!customUiElement) return;
+
+//     // UI設定
+//     const customDownloadButton = customUiElement.querySelector('.bwi-download-button');
+//     const formatLabelElement = customUiElement.querySelector('.bwi-format-label');
+//     const formatLabelText = `${generateFileNameFormatLabel(settings)}.zip`;
+//     formatLabelElement.textContent = formatLabelText;
+//     customDownloadButton.setAttribute('title', formatLabelText);
+
+//     // DownloadTaskのインスタンス化
+//     const task = new DownloadTask({
+//         customFileName: customFileName,
+//         downloadUrl: downloadUrl,
+//         thumbnailUrl: thumbnailUrl,
+//         itemPageUrl: itemPageUrl,
+//         assetName: assetName,
+//         customUiElement: customUiElement
+//     });
+
+//     customDownloadButton.addEventListener('click', () => task.start());
+
+//     // 元のダウンロードボタンの親要素にカスタムUIを追加
+//     const cartContainer = document.querySelector('.variation-cart');
+//     if (cartContainer) {
+//         cartContainer.style.display = 'flex';
+//         cartContainer.appendChild(customUiElement);
+//     }
+// }
+
+async function processItemPage(settings) {
+    console.log("商品ページを処理します。");
+
+    // --- ページ共通の情報を取得 ---
+    const productItemName = document.querySelector('header h2.font-bold')?.textContent.trim() || "unknownItemName";
+    const shopNameElement = document.querySelector('header a[href*=".booth.pm/"] span');
+    const shopName = shopNameElement ? shopNameElement.textContent.trim() : "unknownShopName";
+    const itemPageUrl = window.location.href;
+
+    // --- サムネイルURLの取得 (動画スライドを考慮) ---
+    let thumbnailUrl = '';
+    const firstSlide = document.querySelector('.primary-image-area .slick-slide[data-slick-index="0"]');
+    let imageElement = null;
+
+    // 最初のスライドが動画(iframe)かどうかをチェック
+    if (firstSlide && firstSlide.querySelector('iframe')) {
+        // 動画の場合、2枚目のスライド(data-slick-index="1")をサムネイルとして使用
+        console.log("動画を検知したため、2枚目の画像をサムネイルとします。");
+        imageElement = document.querySelector('.primary-image-area .slick-slide[data-slick-index="1"] .market-item-detail-item-image');
+    } else {
+        // 動画でない場合、1枚目のスライドをサムネイルとして使用
+        imageElement = document.querySelector('.primary-image-area .slick-slide[data-slick-index="0"] .market-item-detail-item-image');
+    }
+
+    // 取得した画像要素からURLを決定
+    if (imageElement) {
+        thumbnailUrl = imageElement.dataset.origin || imageElement.src;
+    } else {
+        // 上記のロジックで画像が見つからない場合のフォールバック
+        const fallbackImage = document.querySelector('.market-item-detail-item-image');
+        thumbnailUrl = fallbackImage?.dataset.origin || fallbackImage?.src || '';
+    }
+
+    // --- 無料ダウンロード可能な全項目を処理 ---
+    const variationItems = document.querySelectorAll('.variation-item');
+    const buttonsContainer = document.createElement('div');
+    buttonsContainer.style.marginBottom = '16px';
+
+    for (const item of variationItems) {
+        const freeDownloadButton = item.querySelector('a.add-cart.full-length');
+        const priceText = item.querySelector('.variation-price')?.textContent.trim();
+        if (!freeDownloadButton || priceText !== '¥ 0') {
+            continue;
+        }
+
+        // ★★★ 修正箇所: querySelectorAllを使い、item内の全ての無料ダウンロードボタンを取得 ★★★
+        const freeDownloadButtons = item.querySelectorAll('.variation-cart a.add-cart.full-length');
+
+        // ★★★ 修正箇所: 取得した各ボタンに対して処理を行うループを追加 ★★★
+        for (const freeDownloadButton of freeDownloadButtons) {
+            const assetName = freeDownloadButton.getAttribute('title') || "unknownAsset";
+            const downloadUrl = freeDownloadButton.href;
+
+            const customFileName = generateCustomFileName(settings, shopName, productItemName, assetName);
+            const customUiElement = await loadUITemplate('src/item_page_ui_template.html');
+            if (!customUiElement) continue;
+
+            const customDownloadButton = customUiElement.querySelector('.bwi-download-button');
+            const productNameLabel = customUiElement.querySelector('.bwi-product-name');
+            const formatLabelElement = customUiElement.querySelector('.bwi-format-label');
+
+            // 新しく追加した要素に「商品名」を設定
+            if (productNameLabel) {
+                productNameLabel.textContent = assetName; // ここではアセット名（ファイル名）を表示
+            }
+
+            // フォーマットラベルには命名規則の形式を表示
+            if (formatLabelElement) {
+                const formatLabelText = `( ${generateFileNameFormatLabel(settings)}.zip )`;
+                formatLabelElement.textContent = formatLabelText;
+            }
+            customDownloadButton.setAttribute('title', `保存名: ${customFileName}.zip`);
+
+            const task = new DownloadTask({
+                customFileName,
+                downloadUrl,
+                thumbnailUrl,
+                itemPageUrl,
+                assetName,
+                customUiElement
+            });
+
+            customDownloadButton.addEventListener('click', () => task.start());
+            buttonsContainer.appendChild(customUiElement);
+        }
+    }
+
+    // --- 生成したカスタムボタン群をページに挿入 ---
+    if (buttonsContainer.hasChildNodes()) {
+        const variationsList = document.getElementById('variations');
+        if (variationsList) {
+            variationsList.parentNode.insertBefore(buttonsContainer, variationsList);
+        }
+    } else {
+        console.log("無料ダウンロード対象の商品が見つかりませんでした。");
+    }
+}
+
+async function processLibraryPage(settings) {
+    const productItemElements = document.querySelectorAll('.mb-16');//get item container (e.g. contains thumbnail,assets)
     for (productItemElement of productItemElements) {
-
-        let shopName = "unknownShopName";//default
-        let productItemName = "unknownItemName";//default
-
-        //get thumbnailUrl
-        const thumbnailUrl = productItemElement.querySelector('.l-library-item-thumbnail').src;
-
         //get author
         const shopNameElement = productItemElement.querySelector('.text-text-gray600');
-        shopName = shopNameElement.textContent.trim().replace(/\s+/g, ' ');
-
+        const shopName = shopNameElement ? shopNameElement.textContent.trim().replace(/\s+/g, ' ') : "unknownShopName";
         //get title
         const itemNameElement = productItemElement.querySelector('.text-text-default');
-        productItemName = itemNameElement.textContent.trim().replace(/\s+/g, ' ');
-
+        productItemName = itemNameElement ? itemNameElement.textContent.trim().replace(/\s+/g, ' ') : "unknownItemName";
         //get item page url
-        //=====================================================
-        let itemPageUrl = '';
         const itemPageUrlElement = productItemElement.querySelector('a[href*="/items/"]');
-        if (itemPageUrlElement) {
-            // 念のため、より厳密な正規表現で最終確認（任意）
-            // if (itemPageUrlElement.href.match(/^https:\/\/[\w-]+\.booth\.pm(\/ja)?\/items\/\d+$/)) {
-            if (itemPageUrlElement.href.match(/^https:\/\/booth\.pm\/[^/]+\/items\/\d+$/)) {
-                itemPageUrl = itemPageUrlElement.href;
-            }
-        }
+        const itemPageUrl = itemPageUrlElement ? itemPageUrlElement.href : '';
         // 取得できたか確認
         if (itemPageUrl) {
             console.log("取得した商品ページURL:", itemPageUrl);
         } else {
             console.warn("商品ページのURLが見つかりませんでした。");
         }
-        //=====================================================
+        //get thumbnailUrl
+        const thumbnailUrl = productItemElement.querySelector('.l-library-item-thumbnail').src;
         //itemPage.jsonを取得する(今のとこ不要．ページロード時に一気に動かすとサーバーに負荷をかけるので，ボタンを押した時のみにする．)
         // if (itemPageUrl) {
         //     const itemInfo = await fetchItemInfo(itemPageUrl + '.json');
         //     console.log(itemInfo)
         // }
-
-        //get assets containers (e.g. contains hoge.zip,downloadlink)
-        const assetContainerElements = productItemElement.querySelector('.mt-16').children;
+        const assetContainerElements = productItemElement.querySelector('.mt-16')?.children || [];//get assets containers (e.g. contains hoge.zip,downloadlink)
         for (assetContainerElement of assetContainerElements) {//assetContainerは一つだけダウンロードボタンを持つ
-            //get assetName(file name)
-            const assetName = assetContainerElement.querySelector('.typography-14').textContent.trim();
+            const assetName = assetContainerElement.querySelector('.typography-14')?.textContent.trim() || '';//file name
+            const downloadUrl = assetContainerElement.querySelector('a')?.href || '';
+            if (!assetName || !downloadUrl) continue;
 
-            //get downloadUrl
-            const downloadUrl = assetContainerElement.querySelector('a').href;
-            // console.log(downloadUrl);
-
-            //make fileName (+ remove ext from assetName)
             const customFileName = generateCustomFileName(settings, shopName, productItemName, assetName);
-
-            // ▼▼▼ テンプレートからUIを読み込む ▼▼▼
             const customUiElement = await loadUITemplate('src/ui_template.html');
             if (!customUiElement) {
                 console.error('Failed to load UI template for asset, skipping:', assetName);
                 continue; // テンプレート読み込み失敗時はスキップ
             }
-            // テンプレート内の各要素を取得
-            const customDownloadButton = customUiElement.querySelector('.bwi-download-button');
-            // const mainTextSpan = customDownloadButton.querySelector('.bwi-main-text');
+            const customDownloadButton = customUiElement.querySelector('.bwi-download-button');// テンプレート内の各要素を取得
             const formatLabelElement = customDownloadButton.querySelector('.bwi-format-label');
-            // const progressBarWrapper = customUiElement.querySelector('.bwi-progress-wrapper');
-
-            // フォーマットラベル設定
-            const formatLabelText = `${generateFileNameFormatLabel(settings)}.zip`;
+            const formatLabelText = `${generateFileNameFormatLabel(settings)}.zip`;// フォーマットラベル設定
             formatLabelElement.textContent = formatLabelText;
-
             customDownloadButton.setAttribute('title', formatLabelText);//ボタンをホバー表示した際に命名規則を表示
 
             const task = new DownloadTask({
@@ -205,20 +283,44 @@ async function main() {
                 customUiElement: customUiElement
             });
 
-            customDownloadButton.addEventListener('click', async () => { //
-                await task.start();
-            });
+            customDownloadButton.addEventListener('click', async () => await task.start());
 
-            // 既存のダウンロードリンクなどを内包するコンテナを探す
-            const downloadActionsContainer = assetContainerElement.querySelector('.mt-8');
+            const downloadActionsContainer = assetContainerElement.querySelector('.mt-8');// 既存のダウンロードリンクなどを内包するコンテナを探す
             if (downloadActionsContainer) {
-                // このコンテナは既にflexコンテナなので、その子として追加すれば横に並ぶはず
-                downloadActionsContainer.appendChild(customUiElement);
+                downloadActionsContainer.appendChild(customUiElement);// このコンテナは既にflexコンテナなので、その子として追加すれば横に並ぶはず
             } else {
-                // フォールバック
-                assetContainerElement.appendChild(customUiElement);
+                assetContainerElement.appendChild(customUiElement);// フォールバック
             }
         }
+    }
+}
+
+async function main() {
+    //Bootstrap icon追加
+    //=====================================================
+    const link = document.createElement("link");
+    link.rel = "stylesheet";
+    link.href = "https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css";
+    document.head.appendChild(link);
+    //=====================================================
+    const settings = await new Promise((resolve) => {// 設定を読み込む
+        chrome.storage.local.get(['namingRules'], resolve);
+    });
+    console.log(`namingRules is loaded > ${settings.namingRules}`);
+
+    // URLに応じて処理を分岐
+    const currentUrl = window.location.href;
+    // const isItemPage = currentUrl.match(/https:\/\/booth\.pm\/[^/]+\/items\/\d+/);
+    const isItemPage = currentUrl.match(/^https:\/\/(?:[a-zA-Z0-9-]+\.)?booth\.pm\/.*items\/\d+/);
+    console.log(`isItemPage:${isItemPage}`);
+    console.log(`currentUrl:${currentUrl}`);
+    if (currentUrl.includes('accounts.booth.pm/library')) {
+        console.log("processLibraryPage");
+        await processLibraryPage(settings);
+        // } else if (currentUrl.match(/booth\.pm\/(ja|en|ko)\/items\/\d+/)) {
+    } else if (isItemPage) {
+        console.log("processItemPage");
+        await processItemPage(settings);
     }
 }
 main();

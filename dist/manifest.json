@@ -1,7 +1,7 @@
 {
     "manifest_version": 3,
     "name": "Booth With Icon",
-    "version": "1.1.0",
+    "version": "2.0.0",
     "description": "Boothのダウンロード商品を保存するときにアイコンを含めてフォルダを管理しやすくします．",
     "permissions": [
         "downloads",
@@ -33,7 +33,9 @@
     "content_scripts": [
         {
             "matches": [
-                "https://accounts.booth.pm/library*"
+                "https://accounts.booth.pm/library*",
+                "https://booth.pm/*/items/*",
+                "https://*.booth.pm/items/*"
             ],
             "js": [
                 "src/content.js"
@@ -51,11 +53,14 @@
         {
             "resources": [
                 "src/ui_template.html",
+                "src/item_page_ui_template.html",
                 "static/*",
                 "*.map"
             ],
             "matches": [
-                "https://accounts.booth.pm/*"
+                "https://accounts.booth.pm/*",
+                "https://booth.pm/*",
+                "https://*/*"
             ]
         }
     ]

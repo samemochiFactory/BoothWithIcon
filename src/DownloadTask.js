@@ -46,6 +46,7 @@ export class DownloadTask {
     }
 
     async start() {
+        console.log("DownloadTask開始");
         if (this.progressBarWrapper) {
             this.progressBarWrapper.style.visibility = 'visible'; // progressBarラッパーを表示
         }
@@ -58,7 +59,12 @@ export class DownloadTask {
             this.mainTextSpan.textContent = "Loading..."; // ボタンのテキスト変更
         }
         if (this.customDownloadButton) {
+            console.log("ボタンを無効化します");
+            //ボタン無効化(library-pate)
             this.customDownloadButton.disabled = true; // ボタンを無効化
+            //aタグ無効化(item-page)
+            this.customDownloadButton.style.pointerEvents = 'none';
+            this.customDownloadButton.style.opacity = '0.65';
         }
 
         try {
@@ -82,7 +88,7 @@ export class DownloadTask {
         console.log("fetching ItemBlob");
         const productBlob = await fetchItemBlob(this.downloadUrl, this.progressBarId);
         const filetype = await fileTypeFromBlob(productBlob);
-        const ext = filetype ? filetype.ext : 'bin';
+        // const ext = filetype ? filetype.ext : 'bin';
         console.log("fetching Thumbnail");
         const thumbnailBlob = await fetchThumbnail(this.thumbnailUrl);
         if (!thumbnailBlob) throw new Error("Failed to fetch thumbnail.");
@@ -91,11 +97,12 @@ export class DownloadTask {
 
         const fileMap = new Map();
         fileMap.set(`boothThumbnail.ico`, icoBlob);
-        fileMap.set(`${this.assetName}.${ext}`, productBlob);
+        // fileMap.set(`${this.assetName}.${ext}`, productBlob);
+        fileMap.set(`${this.assetName}`, productBlob);
 
         // desktop.ini の内容を static/desktop.ini から読み込む
-        const desktopIniContent = await this._loadStaticFileAsText("desktop.ini");
-        // fileMap.set("desktop.ini", desktopIniContent !== null ? desktopIniContent : `[.ShellClassInfo]\nIconResource=boothThumbnail.ico,0\n[ViewState]\nMode=\nVid=\nFolderType=Generic`);
+        // fileMap.set("desktop.ini", `[.ShellClassInfo]\nIconResource=boothThumbnail.ico,0\n[ViewState]\nMode=\nVid=\nFolderType=Generic`);
+        const desktopIniContent = await this._loadStaticFileAsText("desktop-ini.txt");
         if (desktopIniContent !== null) {
             console.log("loaded desktop.ini from static/");
             fileMap.set("desktop.ini", desktopIniContent);
@@ -107,8 +114,8 @@ export class DownloadTask {
         }
 
         // setIcon.bat の内容を static/setIcon.bat から読み込む
-        const setIconBatContent = await this._loadStaticFileAsText("setIcon.bat");
-        // fileMap.set("setIcon.bat", setIconBatContent !== null ? setIconBatContent : `@echo off\nsetlocal\nset "folder=%~dp0"\nset "folder=%folder:~0,-1%"\necho target folder: %folder%\nattrib +s +r "%folder%"\nattrib +h +s "%folder%\\desktop.ini"`);
+        // fileMap.set("setIcon.bat", `@echo off\nsetlocal\nset "folder=%~dp0"\nset "folder=%folder:~0,-1%"\necho target folder: %folder%\nattrib +s +r "%folder%"\nattrib +h +s "%folder%\\desktop.ini"`);
+        const setIconBatContent = await this._loadStaticFileAsText("setIcon-bat.txt");
         if (setIconBatContent !== null) {
             console.log("loaded setIcon.bat from static/");
             fileMap.set("setIcon.bat", setIconBatContent);
@@ -116,7 +123,7 @@ export class DownloadTask {
             // ファイル読み込み失敗時の処理
             console.warn("Warning: static/setIcon.bat could not be loaded. Check the file path and server configuration.");
             // 必要であれば、ここでフォールバックの値を設定することも可能です。
-            fileMap.set("setIcon.bat", `@echo off\nsetlocal\nset "folder=%~dp0"\nset "folder=%folder:~0,-1%"\necho target folder: %folder%\nattrib +s +r "%folder%"\nattrib +h +s "%folder%\\desktop.ini"`);
+            fileMap.set("setIcon.bat", `@echo off\nsetlocal\npowershell -Command "Get-ChildItem -Path '%~dp0' -Recurse | Unblock-File"\nset "folder=%~dp0"\nset "folder=%folder:~0,-1%"\necho target folder: %folder%\nattrib +s +r "%folder%"\nattrib +h +s "%folder%\\desktop.ini"`);
         }
 
         // 設定を読み込む
@@ -126,8 +133,9 @@ export class DownloadTask {
         const includeItemPageLink = result.includeItemPageLink !== false;
         console.log(`includeItemPageLink = ${includeItemPageLink}`);
         if (includeItemPageLink) {
+            // fileMap.set("BoothLink.url", `[{000214A0-0000-0000-C000-000000000046}]\nProp3=19,11\n[InternetShortcut]\nIDList=\nURL=${this.itemPageUrl}`);
             //load BoothLink.url and include to zip
-            const itemPageLinkContent = await this._loadStaticFileAsText("BoothLink.url");
+            const itemPageLinkContent = await this._loadStaticFileAsText("BoothLink-url.txt");
             if (itemPageLinkContent !== null) {
                 console.log("loaded BoothLink.url from static/");
                 fileMap.set("BoothLink.url", itemPageLinkContent.replace(/^URL=https:\/\/.*$/m, `URL=${this.itemPageUrl}`));
@@ -135,7 +143,7 @@ export class DownloadTask {
                 // ファイル読み込み失敗時の処理
                 console.warn("Warning: static/setIcon.bat could not be loaded. Check the file path and server configuration.");
                 // 必要であれば、ここでフォールバックの値を設定することも可能です。
-                fileMap.set("BoothLink.url", `[{000214A0-0000-0000-C000-000000000046}]\nProp3=19,11\n[InternetShortcut]\nIDList=\nURL=${this.itemPageUrl}\nIconIndex=0\nHotKey=0\nIconFile=boothThumbnail.ico`);
+                fileMap.set("BoothLink.url", `[{000214A0-0000-0000-C000-000000000046}]\nProp3=19,11\n[InternetShortcut]\nIDList=\nURL=${this.itemPageUrl}`);
             }
         }
 
@@ -188,7 +196,11 @@ export class DownloadTask {
             this.mainTextSpan.textContent = this.InitialMainText;
         }
         if (this.customDownloadButton) {
+            //ボタン無効化(library-pate)
             this.customDownloadButton.disabled = false;
+            //aタグ無効化(item-page)
+            this.customDownloadButton.style.pointerEvents = 'auto';
+            this.customDownloadButton.style.opacity = '1';
         }
     }
 }

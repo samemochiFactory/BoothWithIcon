@@ -14,16 +14,28 @@ export default defineConfig({
                     dest: 'static/icons'
                 },
                 // setting resource
+                // {
+                //     src: 'static/desktop.ini',
+                //     dest: 'static'
+                // },
+                // {
+                //     src: 'static/setIcon.bat',
+                //     dest: 'static'
+                // },
+                // {
+                //     src: 'static/BoothLink.url',
+                //     dest: 'static'
+                // },
                 {
-                    src: 'static/desktop.ini',
+                    src: 'static/desktop-ini.txt',
                     dest: 'static'
                 },
                 {
-                    src: 'static/setIcon.bat',
+                    src: 'static/setIcon-bat.txt',
                     dest: 'static'
                 },
                 {
-                    src: 'static/BoothLink.url',
+                    src: 'static/BoothLink-url.txt',
                     dest: 'static'
                 },
                 // popup
@@ -47,6 +59,10 @@ export default defineConfig({
                 // customUI
                 {
                     src: 'src/ui_template.html',
+                    dest: 'src'
+                },
+                {
+                    src: 'src/item_page_ui_template.html',
                     dest: 'src'
                 },
                 {

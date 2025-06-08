@@ -1,0 +1,6 @@
+[.ShellClassInfo]
+IconResource=boothThumbnail.ico,0
+[ViewState]
+Mode=
+Vid=
+FolderType=Generic
