@@ -59,7 +59,7 @@
 .bwi-format-label {
     /* display: block; */
     /* 親がflex-direction:column なので不要かも */
-    color: #6c757d !important;
+    color: #6c757d;
     /* bwi-text-muted 相当 */
     font-size: 0.65rem;
     /* 少し小さめにする */

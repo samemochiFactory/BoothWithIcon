@@ -62,6 +62,10 @@ export default defineConfig({
                     dest: 'src'
                 },
                 {
+                    src: 'src/item_page_ui_template.html',
+                    dest: 'src'
+                },
+                {
                     src: 'src/content_styles.css',
                     dest: 'src'
                 }

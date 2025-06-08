@@ -46,6 +46,7 @@ export class DownloadTask {
     }
 
     async start() {
+        console.log("DownloadTask開始");
         if (this.progressBarWrapper) {
             this.progressBarWrapper.style.visibility = 'visible'; // progressBarラッパーを表示
         }
@@ -58,7 +59,12 @@ export class DownloadTask {
             this.mainTextSpan.textContent = "Loading..."; // ボタンのテキスト変更
         }
         if (this.customDownloadButton) {
+            console.log("ボタンを無効化します");
+            //ボタン無効化(library-pate)
             this.customDownloadButton.disabled = true; // ボタンを無効化
+            //aタグ無効化(item-page)
+            this.customDownloadButton.style.pointerEvents = 'none';
+            this.customDownloadButton.style.opacity = '0.65';
         }
 
         try {
@@ -190,7 +196,11 @@ export class DownloadTask {
             this.mainTextSpan.textContent = this.InitialMainText;
         }
         if (this.customDownloadButton) {
+            //ボタン無効化(library-pate)
             this.customDownloadButton.disabled = false;
+            //aタグ無効化(item-page)
+            this.customDownloadButton.style.pointerEvents = 'auto';
+            this.customDownloadButton.style.opacity = '1';
         }
     }
 }

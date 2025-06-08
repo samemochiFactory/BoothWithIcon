@@ -33,7 +33,8 @@
     "content_scripts": [
         {
             "matches": [
-                "https://accounts.booth.pm/library*"
+                "https://accounts.booth.pm/library*",
+                "https://booth.pm/*/items/*"
             ],
             "js": [
                 "src/content.js"
@@ -51,11 +52,13 @@
         {
             "resources": [
                 "src/ui_template.html",
+                "src/item_page_ui_template.html",
                 "static/*",
                 "*.map"
             ],
             "matches": [
-                "https://accounts.booth.pm/*"
+                "https://accounts.booth.pm/*",
+                "https://booth.pm/*"
             ]
         }
     ]
