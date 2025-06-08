@@ -9,6 +9,7 @@ Boothで購入したアセットの管理において、こんな課題はあり
 Boothでも公開中！(https://hrsm.booth.pm/items/6857517)
 <div align="center">
   <img src="images/bwi-about.png" alt="アイコン設定後のエクスプローラー" width="100%">
+      <p><em>Windows エクスプローラー画面(フォルダアイコン設定後)</em></p>
 </div>
 
 <table align="center" width="100%">
