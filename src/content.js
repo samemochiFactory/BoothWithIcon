@@ -237,9 +237,11 @@ async function processLibraryPage(settings) {
         //get author
         const shopNameElement = productItemElement.querySelector('.text-text-gray600');
         const shopName = shopNameElement ? shopNameElement.textContent.trim().replace(/\s+/g, ' ') : "unknownShopName";
+        console.log("shopName:", shopName);
         //get title
         const itemNameElement = productItemElement.querySelector('.text-text-default');
         productItemName = itemNameElement ? itemNameElement.textContent.trim().replace(/\s+/g, ' ') : "unknownItemName";
+        console.log("productItemName:", productItemName);
         //get item page url
         const itemPageUrlElement = productItemElement.querySelector('a[href*="/items/"]');
         const itemPageUrl = itemPageUrlElement ? itemPageUrlElement.href : '';
@@ -258,7 +260,8 @@ async function processLibraryPage(settings) {
         // }
         const assetContainerElements = productItemElement.querySelector('.mt-16')?.children || [];//get assets containers (e.g. contains hoge.zip,downloadlink)
         for (assetContainerElement of assetContainerElements) {//assetContainerは一つだけダウンロードボタンを持つ
-            const assetName = assetContainerElement.querySelector('.typography-14')?.textContent.trim() || '';//file name
+            // const assetName = assetContainerElement.querySelector('.typography-14')?.textContent.trim() || '';//file name
+            const assetName = assetContainerElement.querySelector('.text-14')?.textContent.trim() || '';//file name
             const downloadUrl = assetContainerElement.querySelector('a')?.href || '';
             if (!assetName || !downloadUrl) continue;
 
@@ -287,8 +290,10 @@ async function processLibraryPage(settings) {
 
             const downloadActionsContainer = assetContainerElement.querySelector('.mt-8');// 既存のダウンロードリンクなどを内包するコンテナを探す
             if (downloadActionsContainer) {
+                // console.log("ダウンロードコンテナ発見！");
                 downloadActionsContainer.appendChild(customUiElement);// このコンテナは既にflexコンテナなので、その子として追加すれば横に並ぶはず
             } else {
+                // console.log("ダウンロードコンテナが見つかりません！");
                 assetContainerElement.appendChild(customUiElement);// フォールバック
             }
         }

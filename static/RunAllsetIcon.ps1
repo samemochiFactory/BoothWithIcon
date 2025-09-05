@@ -64,5 +64,8 @@ if ($setIconScripts) {
     Write-Host "No setIcon.bat files were found to execute." -ForegroundColor Red
 }
 
+ie4uinit.exe -ClearIconCache
+ie4uinit.exe -show
+
 # Wait for user input before closing the window.
 Read-Host "Processing complete. Press Enter to close this window."
