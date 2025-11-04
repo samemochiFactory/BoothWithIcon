@@ -173,8 +173,8 @@ async function processItemPage(settings) {
 
     for (const item of variationItems) {
         const freeDownloadButton = item.querySelector('a.add-cart.full-length');
-        const priceText = item.querySelector('.variation-price')?.textContent.trim();
-        if (!freeDownloadButton || priceText !== '¥ 0') {
+        const isFree = priceText === '¥ 0' || priceText === '0 JPY';
+        if (!freeDownloadButton || !isFree) {
             continue;
         }
 
